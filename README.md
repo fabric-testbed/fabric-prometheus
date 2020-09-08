@@ -9,9 +9,9 @@ Prometheus is intended to be a pull system where a Prometheus client will period
 
 Each Fabric rack will have a VM running a docker-compose set containing Prometheus and its supporting containers. These include:
 * **Prometheus**  
-The Prometheus Client responsible for polling exporters for metrics.
+The [Prometheus](prometheus.io), [DockerHub](https://hub.docker.com/r/prom/prometheus), Client responsible for polling exporters for metrics.
 * **Thanos**  
-Thanos consists of several components. For component information see [Thanos Quick Tutorial](https://thanos.io/tip/thanos/quick-tutorial.md/)
+[Thanos](thanos.io),[Docker](https://quay.io/repository/thanos/thanos) consists of several components. For component information see [Thanos Quick Tutorial](https://thanos.io/tip/thanos/quick-tutorial.md/)
   * **Sidecar**  
   Reads the data from the Prometheus database and ships it to the global storage.
   * **Query**  
@@ -19,42 +19,51 @@ Thanos consists of several components. For component information see [Thanos Qui
   * **Gateway**  
   Connects to remote object stores such as the S3 stored data.
 * **SNMP exporter**  
-Exporter that transforms data from SNMP devices for the Prometheus Client.
+[snmp_exporter](https://github.com/prometheus/snmp_exporter) that transforms data from SNMP devices for the Prometheus Client.
 * **Docker exporter**  
-Exporter for information about the running containers.
+[prometheus-net/docker_exporter](https://github.com/prometheus-net/docker_exporter) for information about the running containers.
 * **Grafana**  
-Allows for web UI to review the locally collected metrics.
+[Grafana](grafana.com), [DockerHub](https://hub.docker.com/r/grafana/grafana/), Allows for web UI to review the locally collected metrics.
 * **Nginx**  
-Reverse proxy to enable SSL for Grafana and limit access to web GUIs run by various components/
-TODO
-```
-* **Alert manager**
-? or is that being shifted to Thanos Rules?
-* **Nginx exporter**
-?needed?
-```
+[Nginx](https://www.nginx.com), [DockerHub](https://hub.docker.com/_/nginx) Reverse proxy to enable SSL for Grafana and limit access to web GUIs run by various components/
 
 
-The Prometheus container maps 2 volumes: 
-* `prometheus` configuration files  (list config files and point to example)
-* `prometheus_data` the database and supporting data files
-https://fabric-testbed.atlassian.net/wiki/spaces/FP/pages/89325610/Ancillary+Infrastructure
-The thanos sidecar container maps 2 volumes:
-* `thanos` config files (list config files and point to example)
-* `prometheus_data` the database and supporting files for prometheus (?problems with double mapping of volume? sharing data between containers?)
+## Docker Volumes
+The directory structure of this repository includes several directories that will be mapped as Docker volumes.  
+The Prometheus container binds 2 volumes: 
+* `prometheus/config` Contains the configuration file `prometheus_config.yml`. You will need to edit this file.
+* `prometheus/data` Contains the database and supporting data files that will be created by Prometheus.
+https://fabric-testbed.atlassian.net/wiki/spaces/FP/pages/89325610/Ancillary+Infrastructure  
 
-(other thanos containers...)
+The Thanos sidecar container binds 2 volumes:
+* `thanos/config` Contains the configuration file `object_store_config.yml` which contains the credentials for the S3 storage. You will need to edit this file.
+* `prometheus/data` the database and supporting files for prometheus, see above.
 
-Grafana presents the timeseries data via a web interface. Defaults to port 3000? Is proxied via nginx
+The Thanos Store Gateway container binds 1 volume.
+* `thanos/config` Contains the configuration file `object_store_config.yml` which contains the credentials for the S3 storage. You will need to edit this file. Same as above.
 
-Nginx provides a reverse proxy to the componets that provide web interfaces but do not provide other forms of security such as SSL or user logins. Nginx will provide at least SSL. (will add other methods later for users etc...) Accesible pages are:
-* Grafana, has log in methods 
-* Prometheus info page
-* Thanos info page
+The Grafana container binds 3 volumes.
+* `grafana/data` Contains grafana generated data.
+* `grafana/provisioning` Contains initial settings for datasources and dashboards.
+* `grafana/custom` Contains custom ini settings. You will need to edit this file.
 
-Docker monitor
+The Nginx container binds 2 volumes.  
+`nginx/config/nginx.conf` Contains the Nginx configuration file. You will need to edit this file.
+`nginx/certs` Conatins the SSL certs. You will need to add or link the certs here.
 
-## Files That Need To Be Edited
+The docker_exporter binds to the exisiting docker sock at `/var/run/docker.sock`
+
+
+## Web UI
+Nginx provides a reverse proxy to the componets that provide web interfaces but do not provide other forms of security such as SSL or user logins. Nginx will provide at least SSL.  
+Accesible pages are:  
+* Grafana, has log in methods `metrics.yoursite.fabric-testbed.net/grafana` 
+* Prometheus info page `metrics.yoursite.fabric-testbed.net:9090`
+* Thanos info page `metrics.yoursite.fabric-testbed.net:10902`  
+To disable/enable these pages for public view edit the nginx configuration file. See below.
+
+
+## Conguration Files That Need To Be Edited
 * prometheus/config/prometheus_config.yml  
 Set the rack name to the site acronym found at [Fabric Sites](https://fabric-testbed.atlassian.net/wiki/spaces/FP/pages/168624158/FABRIC+Site+Documentation)
 * thanos/config/object_store_config.yml  
