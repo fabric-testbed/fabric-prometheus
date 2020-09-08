@@ -1,0 +1,7 @@
+type: S3
+config:
+        bucket: "fabric_metrics"
+        endpoint: "ceph-0.metrics.fabric-testbed.net"
+        access_key: "<add your key here>"
+        secret_key: "<add your secret here>"
+
