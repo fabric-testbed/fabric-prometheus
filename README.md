@@ -23,7 +23,7 @@ The [Prometheus](https://prometheus.io), [DockerHub](https://hub.docker.com/r/pr
 * **Docker exporter**  
 [prometheus-net/docker_exporter](https://github.com/prometheus-net/docker_exporter) for information about the running containers.
 * **Grafana**  
-[Grafana](grafana.com), [DockerHub](https://hub.docker.com/r/grafana/grafana/), Allows for web UI to review the locally collected metrics.
+[Grafana](https://grafana.com), [DockerHub](https://hub.docker.com/r/grafana/grafana/), Allows for web UI to review the locally collected metrics.
 * **Nginx**  
 [Nginx](https://www.nginx.com), [DockerHub](https://hub.docker.com/_/nginx) Reverse proxy to enable SSL for Grafana and limit access to web GUIs run by various components/
 
@@ -33,7 +33,6 @@ The directory structure of this repository includes several directories that wil
 The Prometheus container binds 2 volumes: 
 * `prometheus/config` Contains the configuration file `prometheus_config.yml`. You will need to edit this file.
 * `prometheus/data` Contains the database and supporting data files that will be created by Prometheus.
-https://fabric-testbed.atlassian.net/wiki/spaces/FP/pages/89325610/Ancillary+Infrastructure  
 
 The Thanos sidecar container binds 2 volumes:
 * `thanos/config` Contains the configuration file `object_store_config.yml` which contains the credentials for the S3 storage. You will need to edit this file.
@@ -62,8 +61,26 @@ Accesible pages are:
 * Thanos info page `metrics.yoursite.fabric-testbed.net:10902`  
 To disable/enable these pages for public view edit the nginx configuration file. See below.
 
+## Installation
+Tested using CentOS 8
+### Prerequisites
+* git
+* docker
+* docker-compose
+(TODO add or link to docker instructions for centos8)
+
+#### TLDR 
+1) Clone this repo
+1) Edit the configuration files
+1) `docker-compose up`
 
 ## Conguration Files That Need To Be Edited
+Clone this repo
+74
+Edit the configuration files
+75
+`docker-compose up`
+76
 * prometheus/config/prometheus_config.yml  
 Set the rack name to the site acronym found at [Fabric Sites](https://fabric-testbed.atlassian.net/wiki/spaces/FP/pages/168624158/FABRIC+Site+Documentation)
 * thanos/config/object_store_config.yml  
