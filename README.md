@@ -9,9 +9,9 @@ Prometheus is intended to be a pull system where a Prometheus client will period
 
 Each Fabric rack will have a VM running a docker-compose set containing Prometheus and its supporting containers. These include:
 * **Prometheus**  
-The [Prometheus](prometheus.io), [DockerHub](https://hub.docker.com/r/prom/prometheus), Client responsible for polling exporters for metrics.
+The [Prometheus](https://prometheus.io), [DockerHub](https://hub.docker.com/r/prom/prometheus), Client responsible for polling exporters for metrics.
 * **Thanos**  
-[Thanos](thanos.io),[Docker](https://quay.io/repository/thanos/thanos) consists of several components. For component information see [Thanos Quick Tutorial](https://thanos.io/tip/thanos/quick-tutorial.md/)
+[Thanos](https://thanos.io), [Docker](https://quay.io/repository/thanos/thanos) consists of several components. For component information see [Thanos Quick Tutorial](https://thanos.io/tip/thanos/quick-tutorial.md/)
   * **Sidecar**  
   Reads the data from the Prometheus database and ships it to the global storage.
   * **Query**  
