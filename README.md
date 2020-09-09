@@ -29,7 +29,7 @@ The [Prometheus](https://prometheus.io), [DockerHub](https://hub.docker.com/r/pr
 
 
 ## Docker Volumes
-The directory structure of this repository includes several directories that will be mapped as Docker volumes.  
+The system includes several directories that will be mapped as Docker volumes. The repo directory `example_volumes` contains these directories and base configuration files. See below on which files need editing. 
 The Prometheus container binds 2 volumes: 
 * `prometheus/config` Contains the configuration file `prometheus_config.yml`. You will need to edit this file.
 * `prometheus/data` Contains the database and supporting data files that will be created by Prometheus.
@@ -72,9 +72,12 @@ Tested using CentOS 8
 
 ### Steps
 1) Clone this repo
-1) Edit the configuration files
-1) Run `docker-compose up` in the root directory of this cloned repo.
-1) Goto your server url/grafana to 
+1) Copy all the directories from `example_volumes` to the root directory where the `docker-compose.yml` file is located.
+1) Edit the configuration files. See below for details.
+1) Run `docker-compose up` in the root directory where the `docker-compose.yml` is located.
+1) Goto your server url/grafana to log into Grafana. There will be a default dashboards loaded to monitor the installed system.
+1) Add node_exporters to machines you whish to monitor. 
+#### TODO add in options on how to install exporters
 
 ## Conguration Files That Need To Be Edited
 
