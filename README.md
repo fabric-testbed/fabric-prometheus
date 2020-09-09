@@ -1,7 +1,7 @@
 
 # Prometheus Monitoring Setup
 This document covers the installation and configuration of the global metric collection via Prometheus and Thanos.
-Each rack in the FABRIC Testbed has a VM running a set of docker containers (Prometheus, Thanos and supporting containers) responsible for collecting metrics from resources located at/near the rack's location. The collected metrics are perodically shipped using Thanos to a global S3 compatable storage.
+Each rack in the FABRIC Testbed has a VM running a set of docker containers (Prometheus, Thanos and supporting containers) responsible for collecting metrics from resources located at/near the rack's location. The collected metrics are perodically shipped to a global S3 compatable storage using Thanos.
 
 Prometheus is intended to be a pull system where a Prometheus client will periodically poll resources listed in its config file. Each resource to be monitored hosts a server, the "exporter", which is responsible for gathering and returning data to the Prometheus client.
 
@@ -59,6 +59,7 @@ Accesible pages are:
 * Grafana, has log in methods `metrics.yoursite.fabric-testbed.net/grafana` 
 * Prometheus info page `metrics.yoursite.fabric-testbed.net:9090`
 * Thanos info page `metrics.yoursite.fabric-testbed.net:10902`  
+
 To disable/enable these pages for public view edit the nginx configuration file. See below.
 
 ## Installation
@@ -69,25 +70,25 @@ Tested using CentOS 8
 * docker-compose
 (TODO add or link to docker instructions for centos8)
 
-#### TLDR 
+### Steps
 1) Clone this repo
 1) Edit the configuration files
-1) `docker-compose up`
+1) Run `docker-compose up` in the root directory of this cloned repo.
+1) Goto your server url/grafana to 
 
 ## Conguration Files That Need To Be Edited
-Clone this repo
-74
-Edit the configuration files
-75
-`docker-compose up`
-76
-* prometheus/config/prometheus_config.yml  
+
+* `prometheus/config/prometheus_config.yml`  
 Set the rack name to the site acronym found at [Fabric Sites](https://fabric-testbed.atlassian.net/wiki/spaces/FP/pages/168624158/FABRIC+Site+Documentation)
-* thanos/config/object_store_config.yml  
+* `thanos/config/object_store_config.yml`  
 Set your CEPH access key and secret.
-* nginx/config/nginx.conf  
+* `nginx/config/nginx.conf`  
 Set you VM url. Set cert filenames to match below certs.
-* nginx/certs  
+* `nginx/certs`  
 Add the ssl certs for nginx.
-* grafana/custom/custom.ini  
+* `grafana/custom/custom.ini`  
 Set your server url. 
+* `grafana/env_file`
+Add an admin password so you can login to Grafana. `GF_SECURITY_ADMIN_PASSWORD=yourpassword`
+
+
