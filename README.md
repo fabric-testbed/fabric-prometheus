@@ -89,7 +89,8 @@ Set you VM url. Set cert filenames to match below certs.
 * `nginx/certs`  
 Add the ssl certs for nginx.
 * `grafana/custom/custom.ini`  
-Set your server url. 
+Set your server url.  
+If you are enabling CiLogon, set the client_id and client_secret. TBD TODO add links for details when system ready.
 * `grafana/env_file`
 Add an admin password so you can login to Grafana. `GF_SECURITY_ADMIN_PASSWORD=yourpassword`
 
