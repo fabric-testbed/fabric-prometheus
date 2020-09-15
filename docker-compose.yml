@@ -100,7 +100,6 @@ services:
         nginx:
                 image: nginx:1.19
                 #user: "${UID}:${GID}"
-                container_name: reverse_proxy_nginx
                 ports:
                         - 80:80
                         - 443:443
