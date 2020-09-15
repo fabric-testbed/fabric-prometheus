@@ -13,9 +13,8 @@ services:
                 command:
                         - '--config.file=/etc/prometheus/prometheus_config.yml'
                         - '--storage.tsdb.path=/prometheus'
-                        # TODO change to 2hrs still recommended?
-                        - '--storage.tsdb.max-block-duration=30m'
-                        - '--storage.tsdb.min-block-duration=30m'
+                        - '--storage.tsdb.max-block-duration=2h'
+                        - '--storage.tsdb.min-block-duration=2h'
                         - '--web.enable-lifecycle'
                         - '--web.console.libraries=/usr/share/prometheus/console_libraries'
                         - '--web.console.templates=/usr/share/prometheus/consoles'
@@ -115,7 +114,7 @@ services:
                         - prometheus_service
                         - thanos-querier_service
                         
-        docker_monitor_service:
+        docker-monitor_service:
                 image: prometheusnet/docker_exporter
                 volumes:
                         - /var/run/docker.sock:/var/run/docker.sock
