@@ -63,6 +63,7 @@ services:
                         - thanos-store-gateway_service:thanos-store-gateway
                 depends_on:
                         - thanos-sidecar_service
+                        - thanos-store-gateway_service
                 #restart:
                 #        always   
 
