@@ -1,0 +1,7 @@
+---
+# Set usernames and passwords for node_exporter_basic_auth_users:
+# Suggested to use rackname: bycrypted password
+node_exporter_basic_auth_users:
+      #rackname: password
+      #uky: $2y$10$EYxs8IOG46m9CtpB/XlPxO1ei7E4BjAen0SUv6di7mD4keR/8JO6m 
+

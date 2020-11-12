@@ -1,0 +1,12 @@
+all:
+  hosts:
+  children:
+    workers:
+      hosts:
+        #Add hosts names here, fqdn, localnames or ips.
+        #workernode1:
+        #workernode2:
+        #<rackid>-w1:
+	#renc-w1:
+        #renc-w1.fabric-testbed.net
+	#uky-w1:
