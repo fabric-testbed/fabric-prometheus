@@ -1,7 +1,9 @@
 ---
 # Set usernames and passwords for node_exporter_basic_auth_users:
-# Suggested to use rackname: bycrypted password
+# Suggested to use rackname: password
+# Note that ansible will use passlib bcrpyt to set the password into the node_Exporter config file.
+# The user & password will need to be set in the Prometheus scrape configs.
 node_exporter_basic_auth_users:
       #rackname: password
-      #uky: $2y$10$EYxs8IOG46m9CtpB/XlPxO1ei7E4BjAen0SUv6di7mD4keR/8JO6m 
+      #uky: hdaho53refdjn
 
