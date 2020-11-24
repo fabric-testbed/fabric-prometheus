@@ -68,7 +68,6 @@ Tested using CentOS 8
 * git
 * docker
 * docker-compose
-(TODO add or link to docker instructions for centos8)
 
 ### Steps
 1) Clone this repo
