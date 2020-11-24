@@ -1,0 +1,14 @@
+---
+- hosts: all
+    
+  roles:
+    - cloudalchemy.node-exporter
+
+  vars:
+    node_exporter_web_listen_address: "localhost:9100"
+  vars_files:
+    # user name and passwords kept in separate file
+    - ./users.yml
+    # node exporter collector config file
+    - ./collectors_config.yml
+

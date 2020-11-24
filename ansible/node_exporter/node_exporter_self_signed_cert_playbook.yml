@@ -1,6 +1,17 @@
 ---
 - hosts: all
-  pre_tasks:
+ 
+   pre_tasks:
+    - name: Add node-exp user, note this is also done in role below, but we need it here for the cert creation
+      user:
+        name: node-exp
+        groups: node-exp
+        append: true
+        shell: /usr/sbin/nologin
+        system: true
+        create_home: false
+        home: /
+
     - name: Create node_exporter cert dir
       file:
         path: "/etc/node_exporter"
@@ -8,27 +19,30 @@
         owner: root
         group: root
 
-    - name: create key
+    - name: create key    
       openssl_privatekey:
         path: /etc/node_exporter/tls.key
         size: 2048
-        owner: node-exp
+        owner: root
         group: node-exp
+
     - name: create csr
       openssl_csr:
         common_name: metrics.fabric-testbed.net
         path: /etc/node_exporter/tls.csr
         privatekey_path: /etc/node_exporter/tls.key
-        owner: node-exp
+        owner: root
         group: node-exp
+
     - name: create cert
       openssl_certificate:
         path: /etc/node_exporter/tls.cert
         csr_path: /etc/node_exporter/tls.csr
         privatekey_path: /etc/node_exporter/tls.key
         provider: selfsigned
-        owner: node-exp
+        owner: root
         group: node-exp
+
   roles:
     - cloudalchemy.node-exporter
   vars:
@@ -38,4 +52,6 @@
   vars_files:
     # user name and passwords kept in separate file
     - ./users.yml
+    # node_exporter collector configs
+    - ./collectors.yml
 
