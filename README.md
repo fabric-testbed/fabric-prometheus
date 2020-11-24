@@ -76,7 +76,7 @@ Tested using CentOS 8
 1) Edit the configuration files. See below for details.
 1) Run `docker-compose up` in the root directory where the `docker-compose.yml` is located.
 1) Goto your server url/grafana to log into Grafana. There will be a default dashboards loaded to monitor the installed system.
-1) Add node_exporters to machines you whish to monitor. 
+1) Add node_exporters to machines you wish to monitor. 
 
 ### Conguration Files That Need To Be Edited
 
