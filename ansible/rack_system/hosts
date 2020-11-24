@@ -1,0 +1,8 @@
+all:
+  hosts:
+  children:
+    workers:
+      hosts:
+        #Add hosts names here, fqdn, localnames or ips.
+        renc-metrics
+

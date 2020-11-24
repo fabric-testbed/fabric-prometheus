@@ -1,0 +1,29 @@
+[server]
+domain = {{ rack_domain_name }}
+root_url = https://%(domain)s/grafana
+
+
+[auth.generic_oauth]
+#enabled = false
+#client_id = <your client id>
+#client_secret = <your client secret>
+#scopes = openid profile email
+#auth_url = https://cilogon.org/authorize
+#token_url = https://cilogon.org/oauth2/token
+#api_url = https://cilogon.org/oauth2/userinfo
+
+#allow_sign_up = false
+#tls_skip_verify_insecure = false
+#tls_client_cert = <path to your cert.crt>
+#tls_client_key = <path to your key.key>
+
+[smptp]
+#enabled = false
+#host = mail.fabric-testbed.net:25
+#from_address = alerts@metrics.<your rack>.fabric-testbed.net
+#from_name = <your rack name> Grafana Alert
+#user = <your email user>
+#password = <your email password>
+
+[log]
+#level = debug

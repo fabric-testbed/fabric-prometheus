@@ -1,0 +1,83 @@
+---
+
+
+  - name: "Set up user"
+    hosts: all
+    tasks:
+    - name: "Create Fabric Prometheus user as fab-prom"
+      user:
+        name: fab-prom
+        shell: /usr/sbin/nologin
+        system: true
+        create_home: false
+        home: /
+      become: true
+
+  - name: "Create Prometheus Directories"
+    hosts: all
+    tasks:
+    - block:
+        
+      - name: "Create Prometheus directories"
+        become: true
+        file:
+          path: "{{base_install_dir}}/prometheus/{{item}}"
+          state: directory
+          recurse: yes
+          owner: fab-prom
+          group: fab-prom
+        with_items:
+          - [ "config", "data" ]
+        # vars:
+        #   base_install_dir: "/opt/fabric_prometheus"
+        
+
+      - name: install default prometheus config
+        become: true
+        template: 
+          src: prometheus_config.yml.j2
+          dest: /opt/fabric_prometheus/prometheus/config/prometheus.yml
+
+
+
+  - name: "Create Grafana Directories"
+    hosts: all
+    tasks:
+    - block:
+        
+      - name: "Create Grafana directories"
+        become: true
+        file:
+          path: "{{base_install_dir}}/grafana/{{item}}"
+          state: directory
+          recurse: yes
+          owner: fab-prom
+          group: fab-prom
+        with_items:
+          - [ "custom", "data", "provisioning", "provisioning/dashboards", "provisioning/datasources"  ]
+        # vars:
+        #   base_install_dir: "/opt/fabric_prometheus"
+        
+
+      - name: "Add Grafana thanos datasource provisioning."
+        become: true
+        copy: 
+          src: grafana_datasources_thanos.yml
+          dest: "{{ base_install_dir }}/grafana/provisioning/datasources/datasources.yml"
+
+      - name: "Add Grafana custom ini."
+        become: true
+        template: 
+          src: grafana_ini.j2
+          dest: "{{ base_install_dir }}/grafana/custom/custom.ini"
+
+        template: 
+          src: grafana_env.j2
+          dest: "{{ base_install_dir }}/grafana/env_file"
+
+
+
+vars:
+  site_acronym: renc
+  rack_domain_name: metrics.renc.fabric-testbed.net
+  base_install_dir: "/opt/fabric_prometheus"
