@@ -68,7 +68,6 @@ Tested using CentOS 8
 * git
 * docker
 * docker-compose
-(TODO add or link to docker instructions for centos8)
 
 ### Steps
 1) Clone this repo
@@ -76,7 +75,7 @@ Tested using CentOS 8
 1) Edit the configuration files. See below for details.
 1) Run `docker-compose up` in the root directory where the `docker-compose.yml` is located.
 1) Goto your server url/grafana to log into Grafana. There will be a default dashboards loaded to monitor the installed system.
-1) Add node_exporters to machines you whish to monitor. 
+1) Add node_exporters to machines you wish to monitor. 
 
 ### Conguration Files That Need To Be Edited
 
@@ -95,58 +94,6 @@ If you are enabling CiLogon, set the client_id and client_secret. TBD TODO add l
 Add an admin password so you can login to Grafana. `GF_SECURITY_ADMIN_PASSWORD=yourpassword`
 
 ## Node Exporter
-This is available as a [single binary](https://prometheus.io/download/#node_exporter).
+There is now an Ansible script in the ansible/node_exporter directory that will perform the node_exporter install. See the ansible/node_exporter/README.md for details.  
 
-#TODO add ansible files and systemd example
-
-The node_exporter can just be run, totally open to everyone with open http traffic. This is not recommended.  
-Enabling TLS allows increasingly secure methods. Create a config file `web-config.yml` and start the node_exporter using `node_exporter --web.config="web-config.yml"`  
-1. For TLS to work add a cert for the node_exporter machine. It can be either
-    * A self signed cert, the bare minimum to at least encrypt the traffic. 
-    * A Certificate Authority (CA) given cert, this has the advantage that callers could at least check that the exporter is an "offical" exporter and their intended target.
-1. Add certs to node_exporter to only accept request from certain machines.
-    ```
-    client_ca_file : accepted_client_certs  #can include multiples
-    ``` 
-1. For further access control add authorized user and passwords in `basic_auth_user` section. Format is username: bcrypted password.
-This section can include multiple users and can be used without certs, but should/must be used with TLS enabled.
-    ```
-    basic_auth_users:
-            bob: $2y$12$tpGGANJeuvzEWn5ulH7e4e6Kh8sPRCE2bWtlJTc/DXEB6kbF4a3BW
-    ```
-
-A full security example would be:  
-node_exporter's `web-config.yml` file:
-```
-tls_server_config:
-        cert_file: node_exporter.crt
-        key_file: node_exporter.key
-
-        client_auth_type : "RequireAndVerifyClientCert"
-        client_ca_file : prometheus_machine.crt
-
-basic_auth_users:
-        bob: $2y$12$tpGGANJeuvzEWn5ulH7e4e6Kh8sPRCE2bWtlJTc/DXEB6kbF4a3BW
-```
-Prometheus' `prometheus.yml` file section to scrape the node_exporter:
-```
-  - job_name: 'bell'
-    scrape_interval: 30s
-    scheme: https
-    tls_config:
-      # Cert for node_exporter to verify prometheus as a valid client
-      cert_file: '/etc/ca/prometheus_machine.crt'
-      key_file: '/etc/ca/prometheus_machine.key'
-      
-      # To verify the node_exporters' cert
-      ca_file: '/etc/ca/myCA.pem'
-      # If using a self signed cert on the node_explorer, this may be set to true
-      insecure_skip_verify: false
-      
-    basic_auth:
-      username: 'bob'
-      password: <the bcrypted password>
-    static_configs:
-            - targets: ['xxx.xxx.xxx.xxx:9100']
-```
 

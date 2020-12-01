@@ -2,7 +2,7 @@
 
 ## Install Ansible
 [Installing Ansible Details](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-TLDR `sudo dnf install ansible`
+TL;DR `sudo dnf install ansible`
 
 ## Install Needed Ansible role
 `ansible-galaxy install cloudalchemy.node-exporter`
