@@ -18,7 +18,9 @@ Edit the `hosts` file. Add the host(s) onto which  you will be installing the no
 
 ## Run Playbook
 Run the playbook using `ansible-playbook -i hosts node_exporter_self_signed_cert_playbook.yml`
-Add `--check` to run without actually making changes on remote host.
+Add `--check` to run without actually making changes on remote host.  
+Add `--ask-pass` if password needed to login to node.  
+Add `--ask-become-pass` if sudo password needed on node.  
 
 
 
