@@ -1,0 +1,14 @@
+---
+# replace everything in <>
+site_acronym: <site-acronym-goes-here>
+rack_domain_name: metrics.<site-acronym-goes-here>.fabric-testbed.net
+
+rack_public_ip: <public-ip-goes-here>
+rack_private_ip: <private-ip-goes-here>
+
+# user not required just keys
+ceph_access_key: <access-key-goes-here>
+ceph_secret_key: <secret-key-goes-here>
+
+# If you want to setup an admin user for grafana, set the password here.
+#grafana_admin_password: <web_ui_password_goes_here>

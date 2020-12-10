@@ -1,23 +1,24 @@
 ---
 
+- name: "Setup Fabric Prometheus Rack"
 
-  - name: "Set up user"
-    hosts: all
-    tasks:
+
+  hosts: head_node
+  tasks:
+
+# CREATE USER fab-prom #
     - name: "Create Fabric Prometheus user as fab-prom"
+      become: true
       user:
         name: fab-prom
         shell: /usr/sbin/nologin
         system: true
         create_home: false
         home: /
-      become: true
-
-  - name: "Create Prometheus Directories"
-    hosts: all
-    tasks:
-    - block:
         
+# PROMETHEUS #
+    - name: "Create Prometheus Directories"
+      block:
       - name: "Create Prometheus directories"
         become: true
         file:
@@ -30,20 +31,19 @@
           - [ "config", "data" ]
         # vars:
         #   base_install_dir: "/opt/fabric_prometheus"
-        
 
-      - name: install default prometheus config
+      - name: Install Default Prometheus Config
         become: true
         template: 
           src: prometheus_config.yml.j2
-          dest: /opt/fabric_prometheus/prometheus/config/prometheus.yml
+          dest: "{{ base_install_dir }}/prometheus/config/prometheus_config.yml"
+          owner: fab-prom
+          group: fab-prom
 
 
-
-  - name: "Create Grafana Directories"
-    hosts: all
-    tasks:
-    - block:
+# GRAFANA #
+    - name: "Create Grafana Directories"
+      block:
         
       - name: "Create Grafana directories"
         become: true
@@ -64,20 +64,133 @@
         copy: 
           src: grafana_datasources_thanos.yml
           dest: "{{ base_install_dir }}/grafana/provisioning/datasources/datasources.yml"
+          owner: fab-prom
+          group: fab-prom
 
       - name: "Add Grafana custom ini."
         become: true
         template: 
-          src: grafana_ini.j2
+          src: grafana_custom.ini.j2
           dest: "{{ base_install_dir }}/grafana/custom/custom.ini"
+          owner: fab-prom
+          group: fab-prom
 
+      - name: "Add Grafana docker env file to enable above custom ini."
+        become: true
         template: 
           src: grafana_env.j2
           dest: "{{ base_install_dir }}/grafana/env_file"
+          owner: fab-prom
+          group: fab-prom
+
+# BLACKBOX #
+    - name: "Create Blackbox Directories"
+      block:
+        
+      - name: "Create Blackbox directories"
+        become: true
+        file:
+          path: "{{base_install_dir}}/blackbox/config"
+          state: directory
+          recurse: yes
+          owner: fab-prom
+          group: fab-prom
+        
+
+      - name: "Add Blackbox default config."
+        become: true
+        copy: 
+          src: blackbox_config.yml
+          dest: "{{ base_install_dir }}/blackbox/config/blackbox.yml"
+          owner: fab-prom
+          group: fab-prom
+
+# THANOS #
+
+    - name: "Create Thanos Directories"
+      block:
+        
+      - name: "Create Thanos directories"
+        become: true
+        file:
+          path: "{{base_install_dir}}/thanos/config"
+          state: directory
+          recurse: yes
+          owner: fab-prom
+          group: fab-prom
+        
+
+      - name: "Add Thanos config."
+        become: true
+        template: 
+          src: thanos_object_store_config.yml.j2
+          dest: "{{ base_install_dir }}/thanos/config/object_store_config.yml"
+          owner: fab-prom
+          group: fab-prom
+
+# SNMP #
+    - name: "Create SNMP Directories"
+      block:
+        
+      - name: "Create SNMP directories"
+        become: true
+        file:
+          path: "{{base_install_dir}}/snmp/config"
+          state: directory
+          recurse: yes
+          owner: fab-prom
+          group: fab-prom
+        
+
+      - name: "Add SNMP config."
+      # TODO when to create a meaningful config file?
+        become: true
+        copy: 
+          src: snmp.yml
+          dest: "{{ base_install_dir }}/snmp/config/snmp.yml"
+          owner: fab-prom
+          group: fab-prom
+
+
+# NGINX #
+# Need to find acutal NGINX setup role #
+# - name: "Create NGINX Directories"
+#       block:
+        
+#       - name: "Create NGINX directories"
+#         become: true
+#         file:
+#           path: "{{base_install_dir}}/nginx/{{item}}"
+#           state: directory
+#           recurse: yes
+#           owner: fab-prom
+#           group: fab-prom
+#         with_items:
+#           - [ "config", "certs" ]
+
+#       - name: "Add NGINX config."
+#         become: true
+#         copy: 
+#           src: nginx.conf.j2
+#           dest: "{{ base_install_dir }}/nginx/config/nginx.conf"
+#           owner: fab-prom
+#           group: fab-prom
 
 
 
-vars:
-  site_acronym: renc
-  rack_domain_name: metrics.renc.fabric-testbed.net
-  base_install_dir: "/opt/fabric_prometheus"
+
+# DOCKER-COMPOSE #
+
+    - name: "Add Docker-Compose file."
+    
+      become: true
+      template: 
+        src: docker-compose.yml.j2
+        dest: "{{ base_install_dir }}/docker-compose.yml"
+        owner: fab-prom
+        group: fab-prom
+
+  vars:
+    base_install_dir: "/opt/fabric_prometheus"
+  vars_files:
+    - site_vars.yml
