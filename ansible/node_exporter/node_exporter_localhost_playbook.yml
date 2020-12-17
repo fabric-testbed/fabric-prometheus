@@ -1,14 +1,18 @@
 ---
-- hosts: all
+- hosts: head_node
     
   roles:
     - cloudalchemy.node-exporter
 
   vars:
-    node_exporter_web_listen_address: "localhost:9100"
+    # Until I figure out the local host to docker block, set to private ip.
+    node_exporter_web_listen_address: 10.1.1.10:9100
+    #node_exporter_web_listen_address: 127.0.0.1:9100
+
   vars_files:
-    # user name and passwords kept in separate file
-    - ./users.yml
-    # node exporter collector config file
+  #   # user name and passwords kept in separate file
+  # no users used here since that requires TLS
+  #   - ./users.yml
+  # node exporter collector config file
     - ./collectors_config.yml
 

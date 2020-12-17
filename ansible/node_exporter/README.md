@@ -17,10 +17,18 @@ Optionally, you can also add any other users that may need access to the exporte
 Edit the `hosts` file. Add the host(s) onto which  you will be installing the node exporter. See the file for examples.
 
 ## Run Playbook
+Below are the commands to run ansible to install the node_exporter software on the head node or worker nodes.  The only difference is the head node is only exposed on the localhost so it does not require a TLS cert or user/password setting.
+For either case may optionally add these flags.
+* Add `--check` to run without actually making changes on remote host.  
+* Add `--ask-pass` if password needed to login to node.  
+* Add `--ask-become-pass` if sudo password needed on node. 
+### Head Node Exporter
+Run the playbook using `ansible-playbook -i hosts node_exporter_localhost_playbook.yml`
+### Worker Node Exporters
 Run the playbook using `ansible-playbook -i hosts node_exporter_self_signed_cert_playbook.yml`
-Add `--check` to run without actually making changes on remote host.  
-Add `--ask-pass` if password needed to login to node.  
-Add `--ask-become-pass` if sudo password needed on node.  
+ 
+
+
 
 
 

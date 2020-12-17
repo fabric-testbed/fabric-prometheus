@@ -1,8 +1,18 @@
 ---
-- hosts: all
- 
-   pre_tasks:
-    - name: Add node-exp user, note this is also done in role below, but we need it here for the cert creation
+- hosts: worker_nodes
+  become: true
+  pre_tasks:
+    
+    # Note user and group is also done in role below, but we need it here for the cert creation.
+    - name: Add node-exp group.
+      
+      group:
+        name: node-exp
+        state: present
+        system: true
+    
+    - name: Add node-exp user.
+      
       user:
         name: node-exp
         groups: node-exp
@@ -23,15 +33,16 @@
       openssl_privatekey:
         path: /etc/node_exporter/tls.key
         size: 2048
-        owner: root
+        owner: node-exp
         group: node-exp
 
     - name: create csr
       openssl_csr:
-        common_name: metrics.fabric-testbed.net
+        # TODO move to var for the  node! based on host?
+        common_name: { cert_common_name }
         path: /etc/node_exporter/tls.csr
         privatekey_path: /etc/node_exporter/tls.key
-        owner: root
+        owner: node-exp
         group: node-exp
 
     - name: create cert
@@ -40,7 +51,7 @@
         csr_path: /etc/node_exporter/tls.csr
         privatekey_path: /etc/node_exporter/tls.key
         provider: selfsigned
-        owner: root
+        owner: node-exp
         group: node-exp
 
   roles:
@@ -53,5 +64,7 @@
     # user name and passwords kept in separate file
     - ./users.yml
     # node_exporter collector configs
-    - ./collectors.yml
+    - ./collectors_config.yml
+    # site vars
+    - ./site_vars.yml
 

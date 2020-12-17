@@ -5,4 +5,5 @@
 # The user & password will need to be set in the Prometheus scrape configs.
 node_exporter_basic_auth_users:
       #rackname: password
+     
 

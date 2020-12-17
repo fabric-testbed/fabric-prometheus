@@ -1,12 +1,14 @@
 all:
   hosts:
   children:
-    workers:
+    head_node:
+      hosts:
+        #Add head node host names here, fqdn, localname or ips.
+        renc-metrics
+    worker_nodes:
       hosts:
         #Add hosts names here, fqdn, localnames or ips.
-        #workernode1:
-        #workernode2:
-        #<rackid>-w1:
-	#renc-w1:
-        #renc-w1.fabric-testbed.net
-	#uky-w1:
+        #renc-w1-metrics
+        #renc-w2-metrics
+        #renc-w3-metrics
+        renc-metrics

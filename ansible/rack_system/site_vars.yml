@@ -1,0 +1,13 @@
+---
+site_acronym: renc
+rack_domain_name: metrics.renc.fabric-testbed.net
+
+rack_public_ip: 152.54.15.11
+rack_private_ip: 10.1.1.10
+
+# user not required just keys
+ceph_access_key: D8499G3JBJTYXDK1LD42
+ceph_secret_key: qQLO0pLpmP7D9t04NyZhH2DVODoWTqJA1IDkYzvq
+
+# If you want to setup an admin user for grafana, set the password here.
+#grafana_admin_password: ui_password_goes_here
