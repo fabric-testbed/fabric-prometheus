@@ -1,4 +1,0 @@
----
-# These values will change per node.
-cert_common_name: 
-node_exporter_web_listen_address: 10.1.1.10:9100

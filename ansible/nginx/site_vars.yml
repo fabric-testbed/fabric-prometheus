@@ -1,4 +1,0 @@
-#SSL configs
-root_CA_cert_plus_intermediates_file
-ssl_cert_file
-ssl_key_file

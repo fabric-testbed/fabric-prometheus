@@ -1,5 +1,5 @@
 ---
-- hosts: worker_nodes
+- hosts: all
   become: true
   pre_tasks:
     
@@ -38,8 +38,7 @@
 
     - name: create csr
       openssl_csr:
-        # TODO move to var for the  node! based on host?
-        common_name: { cert_common_name }
+        common_name: '{{ cert_common_name }}'
         path: /etc/node_exporter/tls.csr
         privatekey_path: /etc/node_exporter/tls.key
         owner: node-exp
@@ -60,11 +59,4 @@
     node_exporter_tls_server_config:
       cert_file: /etc/node_exporter/tls.cert
       key_file: /etc/node_exporter/tls.key
-  vars_files:
-    # user name and passwords kept in separate file
-    - ./users.yml
-    # node_exporter collector configs
-    - ./collectors_config.yml
-    # site vars
-    - ./site_vars.yml
 

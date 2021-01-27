@@ -18,7 +18,7 @@ datasources:
     # <int> org id. will default to orgId 1 if not specified
     orgId: 1
     # <string> url
-    url: http://thanos-querier_service:10902
+    url: http://thanos-querier_service:10922
     # <string> database password, if used
     password:
     # <string> database user, if used

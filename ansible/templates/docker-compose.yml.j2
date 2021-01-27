@@ -18,106 +18,124 @@ services:
                         - '--web.enable-lifecycle'
                         - '--web.console.libraries=/usr/share/prometheus/console_libraries'
                         - '--web.console.templates=/usr/share/prometheus/consoles'
-                # Ports don't need exposing. Keep in Docker network & map via nginx.
-                #ports:
-                #        - 9090:9090
-                #restart: always
+                restart: always
+                extra_hosts:
+                        # Setup extra hosts so prometheus can label them.
+                        - {{ site_acronym }}-hn.fabric-testbed.net:10.1.1.10
+                        - {{ site_acronym }}-w1.fabric-testbed.net:10.1.1.11
+                        - {{ site_acronym }}-w2.fabric-testbed.net:10.1.1.12
+                        - {{ site_acronym }}-w3.fabric-testbed.net:10.1.1.13
 
         thanos-sidecar_service:
                 # Exports Prometheus data to remote S3 compatible object store.
                 image: quay.io/thanos/thanos:v0.14.0
-                #user: "${UID}:${GID}"
                 volumes:
                         # config files
                         - ./thanos/config/:/etc/thanos/
                         # Provide access to the promtheus data.
                         - ./prometheus/data:/prometheus
+                        # If using tls cert, map the servers tls cert.
+                        #- /etc/pki/tls/certs/renc-hn_fabric-testbed_net.pem:/etc/thanos_certs/hn-cert
+                        #- /etc/pki/tls/private/renc-hn_fabric-testbed_net.key:/etc/thanos_certs/hn-key
                 command:
                         - 'sidecar'
+                        #- '--log.level=debug'
+                        #- '--log.format=json' #logfmt logfmt or json  
                         - '--tsdb.path=/prometheus'
                         - '--prometheus.url=http://prometheus:9090'
-                        - '--grpc-address=0.0.0.0:10091'     
-                        - '--http-address=0.0.0.0:10092'
+                        - '--grpc-address=0.0.0.0:10901'     
+                        - '--http-address=0.0.0.0:10902'
                         - '--objstore.config-file=/etc/thanos/object_store_config.yml'
                 depends_on:
                         - prometheus_service
+                # depends_on and links are used intentionally 
+                # causes startup time delay to be enough to contact prometheus 
+                # HACK find better way to ensure prometheus is running before starting sidcar
                 links:
                         - prometheus_service:prometheus
-                #restart: always
+                ports:
+                        # make accessible for global node to query
+                        - {{rack_public_ip}}:10901:10901
+                restart: always
 
         thanos-querier_service:
                 image: quay.io/thanos/thanos:v0.14.0
-                #user: "${UID}:${GID}"
                 command:
                         - 'query'
-                        - '--grpc-address=0.0.0.0:10091'
-                        - '--http-address=0.0.0.0:10902'
+                        - '--grpc-address=0.0.0.0:10921'
+                        - '--http-address=0.0.0.0:10922'
                         - '--query.replica-label=replica'
-                        - '--store=thanos-sidecar:10091'
-                        - '--store=thanos-store-gateway:10091'
-                # Ports don't need exposing. Keep in Docker network.
-                #ports:
-                #        - 10902:10902
-                links:
-                        - thanos-sidecar_service:thanos-sidecar
-                        - thanos-store-gateway_service:thanos-store-gateway
+                        - '--store=thanos-sidecar_service:10901'
+                        - '--store=thanos-store-gateway_service:10911'
                 depends_on:
                         - thanos-sidecar_service
                         - thanos-store-gateway_service
-                #restart:
-                #        always   
+                restart:
+                        always   
 
         thanos-store-gateway_service:
                 image: quay.io/thanos/thanos:v0.14.0
-                #user: "${UID}:${GID}"
                 volumes:
                         # Config files. Same as for Sidecar
                         - ./thanos/config/:/etc/thanos/
                 command:
                         - 'store'
-                        - '--grpc-address=0.0.0.0:10091'
-                        - '--http-address=0.0.0.0:10902'
+                        - '--grpc-address=0.0.0.0:10911'
+                        - '--http-address=0.0.0.0:10912'
                         - '--data-dir=/tmp/thanos/store'
                         - '--objstore.config-file=/etc/thanos/object_store_config.yml'
-                #restart: always
+                restart: always
 
         grafana_service:
                 image: grafana/grafana:7.1.0
-                #user: "472"
                 user: "${UID}:${GID}"
                 depends_on:
                     - prometheus_service
                     - thanos-querier_service
-                #ports:
-                #    - 3000:3000
                 volumes:
+                    # database
                     - ./grafana/data:/var/lib/grafana
+                    # premade datasources and dashboards
                     - ./grafana/provisioning/:/etc/grafana/provisioning/
+                    # Special configs such as auth, url and smtp settings.
                     - ./grafana/custom:/etc/grafana/custom/
                 env_file:
                     - ./grafana/env_file
-                #restart: always
+                restart: always
 
         nginx:
                 image: nginx:1.19
-                #user: "${UID}:${GID}"
                 ports:
-                        - 80:80
-                        - 443:443
-                        - 9090:9090 # for prometheus stats
-                        - 10902:10902 # for thanos stats
+                        - {{ rack_private_ip }}:3000:3000       # for grafana
+                        - {{ rack_private_ip }}:9090:9090       # for prometheus stats
+                        - {{ rack_private_ip }}:10902:10922     # for thanos stats
                 volumes:
+                        # Config file for above ports.
                         - ./nginx/config/nginx.conf:/etc/nginx/nginx.conf
-                        - ./nginx/certs:/etc/ssl/private
+                        # TLS configs snippet.
+                        - ./nginx/config/ssl_snippet.conf:/etc/nginx/ssl_snippet.conf
+                        # HTAccess for prom/thanos stats pages.
+                        - ./nginx/config/htpasswd:/etc/nginx/htpasswd
+                        # Map the head node ssl certs.
+                        - /etc/ssl/certs/{{site_acronym}}-hn_fabric-testbed_net.pem:/etc/nginx/cert_file
+                        - /etc/ssl/certs/{{site_acronym}}-hn_fabric-testbed_net_interm.cer:/etc/nginx/root_CA_cert_plus_intermediates_file
+                        - /etc/pki/tls/private/{{site_acronym}}-hn_fabric-testbed_net.key:/etc/nginx/key_file
                 depends_on:
                         - grafana_service
                         - prometheus_service
                         - thanos-querier_service
-                        
+
         docker-monitor_service:
                 image: prometheusnet/docker_exporter
                 volumes:
                         - /var/run/docker.sock:/var/run/docker.sock
-        # TODO               
-        # snmp_exporter_service:
-              
+
+        snmp-exporter_service:
+                image: prom/snmp-exporter
+                command: --config.file="/etc/snmp/snmp.yml"
+                volumes:
+                        # Add generated snmp.yml file. 
+                        # See https://github.com/prometheus/snmp_exporter/tree/master/generator for generation details.
+                        - ./snmp/config/snmp.yml:/etc/snmp/snmp.yml
+
+
