@@ -97,3 +97,7 @@ Add an admin password so you can login to Grafana. `GF_SECURITY_ADMIN_PASSWORD=y
 There is now an Ansible script in the ansible/node_exporter directory that will perform the node_exporter install. See the ansible/node_exporter/README.md for details.  
 
 
+## Global Instalation
+TODO
+
+
