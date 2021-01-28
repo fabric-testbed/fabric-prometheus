@@ -62,7 +62,7 @@ Accesible pages are:
 
 To disable/enable these pages for public view edit the nginx configuration file. See below.
 
-## Installation
+## Rack Installation
 Tested using CentOS 8
 ### Prerequisites
 * git
