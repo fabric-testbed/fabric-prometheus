@@ -69,8 +69,10 @@ services:
                         - '--query.replica-label=replica'
                         - '--grpc-client-tls-secure'   # Make store grpc calls using tls 
                         # TODO if needed - '--grpc-client-tls-ca=  #would be - /etc/ssl/certs/renc-hn_fabric-testbed_net_interm.cer:/etc/nginx/root_CA_cert_plus_intermediates_file
-                        - '--store=thanos-sidecar_service:10901'  # queries sidecar via grpc
-                        - '--store=thanos-store-gateway_service:10911'  # queries SW3 via grpc to gateway service 
+                        #- '--store=thanos-sidecar_service:10901'  # queries sidecar via grpc
+                        #- '--store=thanos-store-gateway_service:10911'  # queries SW3 via grpc to gateway service 
+                        - '--store={{rack_public_ip}}:10901'  # queries sidecar via grpc
+                        - '--store={{rack_public_ip}}:10911'  # queries SW3 via grpc to gateway service 
                 depends_on:
                         - thanos-sidecar_service
                         - thanos-store-gateway_service
@@ -93,6 +95,9 @@ services:
                         - '--http-address=0.0.0.0:10912'  
                         - '--data-dir=/tmp/thanos/store'
                         - '--objstore.config-file=/etc/thanos/object_store_config.yml' # connect to SW3 storage
+                ports:
+                        # make accessible for query
+                        - {{rack_public_ip}}:10911:10911
                 restart: always
 
         grafana_service:
