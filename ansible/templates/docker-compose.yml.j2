@@ -34,17 +34,19 @@ services:
                         - ./thanos/config/:/etc/thanos/
                         # Provide access to the promtheus data.
                         - ./prometheus/data:/prometheus
-                        # If using tls cert, map the servers tls cert.
-                        #- /etc/pki/tls/certs/renc-hn_fabric-testbed_net.pem:/etc/thanos_certs/hn-cert
-                        #- /etc/pki/tls/private/renc-hn_fabric-testbed_net.key:/etc/thanos_certs/hn-key
+                        # Map the head node certs for TLS.
+                        - /etc/ssl/certs/{{site_acronym}}-hn_fabric-testbed_net.pem:/etc/thanos_certs/hn-cert
+                        - /etc/pki/tls/private/{{site_acronym}}-hn_fabric-testbed_net.key:/etc/thanos_certs/hn-key
                 command:
                         - 'sidecar'
                         #- '--log.level=debug'
                         #- '--log.format=json' #logfmt logfmt or json  
                         - '--tsdb.path=/prometheus'
                         - '--prometheus.url=http://prometheus:9090'
-                        - '--grpc-address=0.0.0.0:10901'     
-                        - '--http-address=0.0.0.0:10902'
+                        - '--grpc-address=0.0.0.0:10901'  # Called by Global metrics for most recent data.
+                        - '--grpc-server-tls-cert=/etc/thanos_certs/hn-cert'
+                        - '--grpc-server-tls-key=/etc/thanos_certs/hn-key'
+                        - '--http-address=0.0.0.0:10902'  # Used for status page TODO needed?
                         - '--objstore.config-file=/etc/thanos/object_store_config.yml'
                 depends_on:
                         - prometheus_service
@@ -62,11 +64,13 @@ services:
                 image: quay.io/thanos/thanos:v0.14.0
                 command:
                         - 'query'
-                        - '--grpc-address=0.0.0.0:10921'
-                        - '--http-address=0.0.0.0:10922'
+                        #- '--grpc-address=0.0.0.0:10921' # Not needed
+                        - '--http-address=0.0.0.0:10922'  # HTTP endpoint for thanos queries. Called by grafana.
                         - '--query.replica-label=replica'
-                        - '--store=thanos-sidecar_service:10901'
-                        - '--store=thanos-store-gateway_service:10911'
+                        - '--grpc-client-tls-secure'   # Make store grpc calls using tls 
+                        # TODO if needed - '--grpc-client-tls-ca=  #would be - /etc/ssl/certs/renc-hn_fabric-testbed_net_interm.cer:/etc/nginx/root_CA_cert_plus_intermediates_file
+                        - '--store=thanos-sidecar_service:10901'  # queries sidecar via grpc
+                        - '--store=thanos-store-gateway_service:10911'  # queries SW3 via grpc to gateway service 
                 depends_on:
                         - thanos-sidecar_service
                         - thanos-store-gateway_service
@@ -78,12 +82,17 @@ services:
                 volumes:
                         # Config files. Same as for Sidecar
                         - ./thanos/config/:/etc/thanos/
+                        # Map the head node certs for TLS.
+                        - /etc/ssl/certs/{{site_acronym}}-hn_fabric-testbed_net.pem:/etc/thanos_certs/hn-cert
+                        - /etc/pki/tls/private/{{site_acronym}}-hn_fabric-testbed_net.key:/etc/thanos_certs/hn-key
                 command:
                         - 'store'
-                        - '--grpc-address=0.0.0.0:10911'
-                        - '--http-address=0.0.0.0:10912'
+                        - '--grpc-address=0.0.0.0:10911'  # called by query to get SW3 data
+                        - '--grpc-server-tls-cert=/etc/thanos_certs/hn-cert'
+                        - '--grpc-server-tls-key=/etc/thanos_certs/hn-key'
+                        - '--http-address=0.0.0.0:10912'  
                         - '--data-dir=/tmp/thanos/store'
-                        - '--objstore.config-file=/etc/thanos/object_store_config.yml'
+                        - '--objstore.config-file=/etc/thanos/object_store_config.yml' # connect to SW3 storage
                 restart: always
 
         grafana_service:
@@ -108,7 +117,7 @@ services:
                 ports:
                         - {{ rack_private_ip }}:3000:3000       # for grafana
                         - {{ rack_private_ip }}:9090:9090       # for prometheus stats
-                        - {{ rack_private_ip }}:10902:10922     # for thanos stats
+                        - {{ rack_private_ip }}:10922:10922     # for thanos stats
                 volumes:
                         # Config file for above ports.
                         - ./nginx/config/nginx.conf:/etc/nginx/nginx.conf
