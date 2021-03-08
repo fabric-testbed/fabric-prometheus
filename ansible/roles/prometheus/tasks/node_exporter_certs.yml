@@ -1,0 +1,55 @@
+---
+- name: Add Node Exporters
+  block:
+  # This installs the needed self signed certs for the node_exporter.
+  # Note user and group is also done in cloudalchemy.node-exporter used later, 
+  #   but we need it here for the cert creation.
+  - name: Add node-exp group.
+    group:
+      name: node-exp
+      state: present
+      system: true
+  
+  - name: Add node-exp user.
+    user:
+      name: node-exp
+      groups: node-exp
+      append: true
+      shell: /usr/sbin/nologin
+      system: true
+      create_home: false
+      home: /
+
+  - name: Create node_exporter cert dir
+    file:
+      path: "/etc/node_exporter"
+      state: directory
+      owner: root
+      group: root
+
+  - name: create key    
+    openssl_privatekey:
+      path: /etc/node_exporter/tls.key
+      size: 2048
+      owner: node-exp
+      group: node-exp
+
+  - name: create csr
+    become: true
+    openssl_csr:
+      common_name: '{{ hostname }}'
+      path: /etc/node_exporter/tls.csr
+      privatekey_path: /etc/node_exporter/tls.key
+      owner: node-exp
+      group: node-exp
+
+  - name: create cert
+    openssl_certificate:
+      path: /etc/node_exporter/tls.cert
+      csr_path: /etc/node_exporter/tls.csr
+      privatekey_path: /etc/node_exporter/tls.key
+      provider: selfsigned
+      owner: node-exp
+      group: node-exp
+
+  become: true

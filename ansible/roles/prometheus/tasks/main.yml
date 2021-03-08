@@ -1,0 +1,27 @@
+---
+
+- name: Install Fabric-Prometheus setup on Fabric rack.
+  block:
+  - name: Install Prometheus Only on the Head Node
+    import_tasks: fab-prom.yml
+    when: component_type == 'head'
+
+  - name: Install certs for node_exporter
+    import_tasks: node_exporter_certs.yml
+    when: component_type == 'head' or component_type == 'worker' or component_type == 'metrics'
+
+  - name: Install Global Metrics setup
+    import_tasks: fab-prom.yml
+    when: component_type == 'metrics'
+
+  vars:
+
+    fab_components: 
+      - grafana
+      - blackbox
+      # Allows open http access to status pages for thanos & prometheus.
+      #- open_status_page_access
+      # Requires htaccess to access status pages for thanos & prometheus.
+      - restricted_status_page_access
+
+# TODO try adding when for setting vars for head vs global etc..

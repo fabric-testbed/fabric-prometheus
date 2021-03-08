@@ -1,0 +1,165 @@
+global:
+  scrape_interval:     30s # Set the scrape interval to every ? seconds. Default is every 1 minute.
+  evaluation_interval: 30s # Evaluate rules every ? seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+      rack: 'global'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets: ['alertmanager_service:9093']
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+    - cert_alerts.yml
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    #scrape_interval: 5s
+    #scrape_timeout: 5s
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Local docker containers
+  - job_name: 'docker'
+    static_configs:
+      - targets: ['docker_monitor_service:9417']
+
+  # Measurement Framework Kafaka
+  - job_name: 'mf-kafka'
+    static_configs:
+      - targets: ['nsoelk.netlab.uky.edu:9308']
+
+  # Measurement Bus Kafka
+  - job_name: 'mb-kafka'
+    static_configs:
+      - targets: ['nsoelk.netlab.uky.edu:9309']
+
+  # Get info from GMP rack where ceph is running.
+  - job_name: 'geni-federate'
+    honor_labels: true
+    metrics_path: '/federate'
+    params:
+            'match[]':
+                    - '{job=~"ceph-0|thanos_bucket"}'
+    static_configs:
+            - targets: ['172.23.7.230:9090']
+
+  # Jupyter
+  - job_name: 'jupyterhub'
+    bearer_token_file: /etc/prometheus/secrets/jupyterhub
+    scheme: https
+    metrics_path: '/hub/metrics'
+    tls_config:
+            insecure_skip_verify: true
+    static_configs:
+            - targets: ['jupyter.fabric-testbed.net']
+
+  # BlackBox Exporter HTTP 2xx
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+         module: [http_2xx]
+    static_configs:
+         - targets:
+                 # TODO Move to separate file.
+                 - https://jupyter.fabric-testbed.net
+                 - https://ceph-0.metrics.fabric-testbed.net
+                 # without the login, below does not succeed
+                 - https://metrics.fabric-testbed.net/grafana/login
+                 - https://whatisfabric.net
+
+    relabel_configs:
+            - source_labels: [__address__]
+              target_label: __param_target
+            - source_labels: [__param_target]
+              target_label: instance
+            - target_label: __address__
+              replacement: blackbox-exporter_service:9115
+
+
+  # BlackBox Exporter DNS
+  - job_name: 'blackbox-dns'
+    metrics_path: /probe
+    params:
+         module: [dns_global_metrics_test]
+    static_configs:
+         - targets:
+                 - ns1.fabric-testbed.net
+                 - ns2.fabric-testbed.net
+                 - ns3.fabric-testbed.net
+
+    relabel_configs:
+            - source_labels: [__address__]
+              target_label: __param_target
+            - source_labels: [__param_target]
+              target_label: instance
+            - target_label: __address__
+              replacement: blackbox-exporter_service:9115
+
+  # BlackBox Exporter TCP 
+  - job_name: 'blackbox-tcp'
+    metrics_path: /probe
+    params:
+         module: [tcp_connect]
+    static_configs:
+         - targets:
+                 - mbkfk2-1.fabric-testbed.net:19094
+                 - mbkfk2-2.fabric-testbed.net:29094
+                 - mbkfk2-3.fabric-testbed.net:39094
+
+    relabel_configs:
+            - source_labels: [__address__]
+              target_label: __param_target
+            - source_labels: [__param_target]
+              target_label: instance
+            - target_label: __address__
+              replacement: blackbox-exporter_service:9115
+
+  # BlackBox Exporter SMTP
+  - job_name: 'blackbox-smtp'
+    metrics_path: /probe
+    params:
+      module: [smtp_starttls]
+    static_configs:
+      - targets:
+        - mail.fabric-testbed.net:25
+        #- mail.fabric-testbed.net:587
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter_service:9115
+
+  # Node Exporter
+  - job_name: 'node_exporter'
+    scheme: https
+    tls_config:
+            insecure_skip_verify: true
+    basic_auth:
+          username: '{{node_exporter_username}}'
+          password: '{{node_exporter_password}}'
+    static_configs:
+      - targets:
+          - metrics.fabric-testbed.net:9100
+
+
+

@@ -1,0 +1,305 @@
+---
+# These tasks setup the fabric prometheus monitoring system on a headnode.
+# They create a fab-prom user and create directories and copy files to host.
+    - name: Show Install Vars
+      ansible.builtin.debug:
+        msg: 'Installing in {{ base_install_dir }} with data in {{ base_data_dir }}'
+  
+
+# CREATE USER fab-prom #
+    - name: "Setup Fabric Prometheus User"
+      block:
+        - name: "Create Fabric Prometheus user as fab-prom"
+          user:
+            name: fab-prom
+            shell: /usr/sbin/nologin
+            system: true
+            create_home: false
+            home: /
+      become: true
+
+# PROMETHEUS #
+    - name: "Create Prometheus Directories"
+      block:
+        - name: "Create Prometheus directories"
+          file:
+            #path: "{{base_install_dir}}/prometheus/{{item}}"
+            path: "{{base_install_dir}}/prometheus"
+            state: directory
+            recurse: yes
+            owner: fab-prom
+            group: fab-prom
+          # with_items:
+          #   - [ "config", "data" ]
+
+        - name: "Create Prometheus Data directories"
+          # This directory could be 10's of GB.
+          file:
+            path: "{{ base_data_dir }}/prometheus/data"
+            state: directory
+            recurse: yes
+            owner: fab-prom
+            group: fab-prom
+
+        - name: Install Rack Prometheus Config
+          block:
+            - name: Install Default Prometheus Config
+              template: 
+                # TODO add backup to all config files backup: yes
+                src: 'templates/prometheus_config.yml.j2'
+                dest: "{{ base_install_dir }}/prometheus/prometheus_config.yml"
+                owner: fab-prom
+                group: fab-prom
+
+            - name: Install Targets File for Node Exporters
+              template: 
+                src: 'templates/node_targets.yml.j2'
+                dest: "{{ base_install_dir }}/prometheus/node_targets.yml"
+                owner: fab-prom
+                group: fab-prom
+          when: component_type=="head"
+
+        - name: Install Global Prometheus Config
+          block:
+            - name: Install Default Global Prometheus Config
+              template: 
+                src: 'templates/global/prometheus_config.yml.j2'
+                dest: "{{ base_install_dir }}/prometheus/prometheus_config.yml"
+                owner: fab-prom
+                group: fab-prom
+
+            # - name: Install Targets File for Node Exporters
+            #   #become: true
+            #   template: 
+            #     src: 'templates/node_targets.yml.j2'
+            #     #dest: "{{ base_install_dir }}/prometheus/config/prometheus_config.yml"
+            #     dest: "{{ base_install_dir }}/prometheus/node_targets.yml"
+            #     owner: fab-prom
+            #     group: fab-prom
+          when: component_type=="metrics"
+      become: true
+
+# GRAFANA #
+    - name: "Create Grafana Directories and Files"
+      block:
+        - name: "Create Grafana directories"
+          file:
+            path: "{{base_install_dir}}/grafana/{{item}}"
+            state: directory
+            recurse: yes
+            owner: fab-prom
+            group: fab-prom
+          with_items:
+            - [ "custom", "provisioning", "provisioning/dashboards", "provisioning/datasources"  ]
+
+        - name: "Create Grafana Data directories"
+          file:
+            path: "{{base_data_dir}}/grafana/{{item}}"
+            state: directory
+            recurse: yes
+            owner: fab-prom
+            group: fab-prom
+          with_items:
+            - [ "data" ]
+
+
+        - name: "Add Grafana configuration files"
+          block:
+            - name: "Add Grafana thanos datasource provisioning."
+              copy: 
+                #src: 'files/grafana_datasources_thanos.yml'
+                src: 'files/grafana_datasources_local_prometheus.yml'
+                dest: "{{ base_install_dir }}/grafana/provisioning/datasources/datasources.yml"
+                owner: fab-prom
+                group: fab-prom
+
+            - name: "Add Grafana custom ini."
+              template: 
+                src: 'templates/grafana_custom.ini.j2'
+                dest: "{{ base_install_dir }}/grafana/custom/custom.ini"
+                owner: fab-prom
+                group: fab-prom
+
+            - name: "Add Grafana docker env file to enable above custom ini."
+              template: 
+                src: 'templates/grafana_env.j2'
+                dest: "{{ base_install_dir }}/grafana/env_file"
+                owner: fab-prom
+                group: fab-prom
+
+          when: component_type=="head"
+
+
+        - name: Add Global Metrics Grafana Configuration Files
+          block:
+            - name: "Add Global Metrics Grafana thanos datasource provisioning."
+              copy: 
+                #src: 'files/grafana_datasources_thanos.yml'
+                src: 'files/grafana_datasources_thanos.yml'
+                dest: "{{ base_install_dir }}/grafana/provisioning/datasources/datasources.yml"
+                owner: fab-prom
+                group: fab-prom
+
+            - name: "Add Global Metrics Grafana custom ini."
+              template: 
+                src: 'templates/global/grafana_custom.ini.j2'
+                dest: "{{ base_install_dir }}/grafana/custom/custom.ini"
+                owner: fab-prom
+                group: fab-prom
+
+            - name: "Add Global Metrics Grafana docker env file to enable above custom ini."
+              template: 
+                src: 'templates/grafana_env.j2'
+                dest: "{{ base_install_dir }}/grafana/env_file"
+                owner: fab-prom
+                group: fab-prom
+
+          when: component_type=="metrics"
+      when: "'grafana' in fab_components"
+      become: true
+
+# BLACKBOX #
+    - name: "Create Blackbox Directories"
+      block:
+        - name: "Create Blackbox directories"
+          file:
+            path: "{{base_install_dir}}/blackbox/config"
+            state: directory
+            recurse: yes
+            owner: fab-prom
+            group: fab-prom
+
+        - name: "Add Blackbox default config."
+          copy: 
+            src: 'files/blackbox_config.yml'
+            dest: "{{ base_install_dir }}/blackbox/config/blackbox.yml"
+            owner: fab-prom
+            group: fab-prom
+      when: "'blackbox' in fab_components"
+      become: true
+
+# THANOS #
+    - name: "Create Thanos Directories"
+      block:
+        - name: "Create Thanos directories"
+          file:
+            path: "{{base_install_dir}}/thanos/config"
+            state: directory
+            recurse: yes
+            owner: fab-prom
+            group: fab-prom
+
+        - name: "Add Thanos config."
+          template: 
+            src: 'templates/thanos_object_store_config.yml.j2'
+            dest: "{{ base_install_dir }}/thanos/config/object_store_config.yml"
+            owner: fab-prom
+            group: fab-prom
+
+        - name: "Add Global Configs"
+          block:
+            - name: "Add Global Stores"
+              template:
+                src: 'templates/global/thanos_stores.yml.j2'
+                dest: "{{ base_install_dir }}/thanos/config/stores.yml"
+                owner: fab-prom
+                group: fab-prom
+              
+          when: component_type=="metrics"
+      become: true
+
+
+# SNMP #
+    - name: "Create SNMP Directories"
+      block:
+        - name: "Create SNMP directories"
+          file:
+            path: "{{base_install_dir}}/snmp/config"
+            state: directory
+            recurse: yes
+            owner: fab-prom
+            group: fab-prom
+
+        - name: "Add SNMP config."
+          copy: 
+            src: 'files/snmp.yml'
+            dest: "{{ base_install_dir }}/snmp/config/snmp.yml"
+            owner: fab-prom
+            group: fab-prom
+      become: true
+
+# NGINX #
+    - name: "Create NGINX Directories"
+      block:
+        - name: "Create NGINX directories"
+          file:
+            path: "{{base_install_dir}}/nginx/{{item}}"
+            state: directory
+            recurse: yes
+            owner: fab-prom
+            group: fab-prom
+          with_items:
+            - [ "config" ]
+
+        - name: "Add NGINX config."
+          template: 
+            src: 'templates/nginx.conf.j2'
+            dest: "{{ base_install_dir }}/nginx/config/nginx.conf"
+            owner: fab-prom
+            group: fab-prom
+          when: component_type=="head"
+
+        - name: "Add Global Metrics NGINX config."
+          template: 
+            src: 'templates/global/nginx.conf.j2'
+            dest: "{{ base_install_dir }}/nginx/config/nginx.conf"
+            owner: fab-prom
+            group: fab-prom            
+          when: component_type=="metrics"
+
+        - name: Create httpasswd file. For some reason below htpassed will not create it.
+          copy:
+            content: ""
+            dest: "{{ base_install_dir }}/nginx/config/htpasswd"
+            force: no
+            owner: fab-prom
+            group: fab-prom
+            mode: 0644
+
+        - name: Add user to htpasswd file
+          htpasswd:
+            path: "{{ base_install_dir }}/nginx/config/htpasswd"
+            name: "{{ fabric_prometheus_ht_user }}"
+            password: "{{ fabric_prometheus_ht_password }}"
+
+        - name: "Add NGINX ssl snippet."
+          template: 
+            src: 'templates/nginx_ssl_snippet.conf.j2'
+            dest: "{{ base_install_dir }}/nginx/config/ssl_snippet.conf"
+            owner: fab-prom
+            group: fab-prom
+      become: true
+
+# DOCKER-COMPOSE #
+    - name: "Set up Docker Compose on Head Node"
+      block:
+        - name: "Add Docker-Compose file."
+          template: 
+            src: 'templates/docker-compose.yml.j2'
+            dest: "{{ base_install_dir }}/docker-compose.yml"
+            owner: fab-prom
+            group: fab-prom
+      when: 'component_type=="head"'
+      become: true
+
+    - name: "Set up Docker Compose on Global Metrics"
+      block:
+        - name: "Add Global Docker-Compose file."
+          template: 
+            src: 'templates/global/docker-compose.yml.j2'
+            dest: "{{ base_install_dir }}/docker-compose.yml"
+            owner: fab-prom
+            group: fab-prom
+      when: 'component_type=="metrics"'
+      become: true
+

@@ -1,0 +1,29 @@
+# This is an example of ansible var file where sensitive values are stored. 
+# Once filed out you can use ansible-vault to encrypt the values.
+
+# Replace the bracketed values, then uncomment the needed lines.
+
+# Password for the grafana admin account. Fill in if you are enabling Grafana.
+#grafana_admin_password: <admin password goes here>
+
+# User name and password for accessing node_exporter. 
+# Node_exporters on each rack all use the same name and password. 
+# These values will be used to install the node_exporters and to configure prometheus.
+#node_exporter_username: < my_prometheus_user >
+#node_exporter_password: < user password >
+# Note I have not found a way to setup multiple users the way ansible vars are setup here.
+# So the single prometheus user has to be both set above in node_exporter_username and
+# hardcode below. 
+#node_exporter_basic_auth_users:
+#        < my_prometheus_user >: "{{ node_exporter_password }}"
+
+# Nginx htaccess password to access status pages.
+# Currently only one user is added to the list.
+#fabric_prometheus_ht_user: < ht user goes here >
+#fabric_prometheus_ht_password: < ht password goes here >
+
+# Thanos sends data to ceph for long term storage.
+# Access keys must be obtained. 
+#ceph_endpoint: < url for ceph >
+#ceph_access_key: < ceph access key >
+#ceph_secret_key: < ceph secret key >

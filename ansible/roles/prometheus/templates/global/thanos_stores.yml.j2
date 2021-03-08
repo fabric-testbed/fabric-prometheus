@@ -1,0 +1,14 @@
+---
+# The list of locations that implement the query gRPC for Prometheus/Thanos
+- targets:
+    # Local
+    #- thanos-store-gateway_service:10911
+    #- thanos-sidecar_service:10901
+    # HARDCODED value assuming only one metrics rack
+    - metrics.fabric-testbed.net:10901
+    - metrics.fabric-testbed.net:10911
+
+    # Racks
+    - uky-hn.fabric-testbed.net:10901
+    - renc-hn.fabric-testbed.net:10901
+    - lbnl-hn.fabric-testbed.net:10901

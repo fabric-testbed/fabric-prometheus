@@ -1,0 +1,199 @@
+version: '3.1'
+# This is the template for creating the Fabric Testbed's global metrics Prometheus system.
+services:
+# Global Prometheus
+        prometheus_service:
+                # The Prometheus Client
+                image: prom/prometheus:v2.23.0
+                user: "${UID}:${GID}"
+                volumes:
+                        # config files
+                        - {{ base_install_dir }}/prometheus:/etc/prometheus/
+                        # TSDB, WAL, chunks
+                        - {{ base_data_dir }}/prometheus:/prometheus
+                command:
+                        - '--config.file=/etc/prometheus/prometheus_config.yml'
+                        - '--storage.tsdb.path=/prometheus'
+                        - '--storage.tsdb.max-block-duration=2h'
+                        - '--storage.tsdb.min-block-duration=2h'
+                        - '--web.enable-lifecycle'
+                        - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+                        - '--web.console.templates=/usr/share/prometheus/consoles'
+                # Ports don't need exposing. Keep in Docker network & map via nginx.
+                #ports:
+                #        - 9090:9090
+                restart: always
+                
+# Global Thanos - Sidecar
+        thanos-sidecar_service:
+                # Exports Prometheus data to remote S3 compatible object store.
+                image: quay.io/thanos/thanos:v0.14.0
+                volumes:
+                        # config files
+                        - {{ base_install_dir }}/thanos/config/:/etc/thanos/
+                        # Provide access to the promtheus data.
+                        - {{ base_data_dir }}/prometheus:/prometheus
+                        # Map certs on head node.
+                        - /etc/ssl/certs/{{ hank_name }}_fabric-testbed_net.pem:/etc/thanos_certs/cert
+                        - /etc/pki/tls/private/{{ hank_name }}_fabric-testbed_net.key:/etc/thanos_certs/key
+
+                command:
+                        - 'sidecar'
+                        - '--tsdb.path=/prometheus'
+                        - '--prometheus.url=http://prometheus_service:9090'
+                        - '--grpc-address=0.0.0.0:10901'
+
+                        - '--grpc-server-tls-cert=/etc/thanos_certs/cert' 
+                        - '--grpc-server-tls-key=/etc/thanos_certs/key' 
+
+                        - '--http-address=0.0.0.0:10902'
+                        - '--objstore.config-file=/etc/thanos/object_store_config.yml'
+                depends_on:
+                        - prometheus_service
+                ports:
+                        - {{ ansible_host }}:10901:10901
+                restart: always
+
+# Global Thanos - Query
+        thanos-querier_service:
+                image: quay.io/thanos/thanos:v0.14.0
+                volumes:
+                        # Map root ca for client certification.
+                        - /etc/pki/tls/certs/{{ hank_name }}_fabric-testbed_net_interm.cer:/etc/thanos_certs/root-ca
+                        # Map stores.yml file with the list of stores for easier live updates.
+                        - {{ base_install_dir }}/thanos/config/stores.yml:/etc/thanos_stores/stores.yml
+                command:
+                        - 'query'
+                        # grpc is not needed, but could be used by a remote system
+                        #- '--grpc-address=0.0.0.0:10921'
+                        # http called by grafana for datasource
+                        - '--http-address=0.0.0.0:10922'
+                        - '--query.replica-label=replica'
+                        # Connect to local and remote stores. Automatically check file for updates.
+                        - '--store.sd-files=/etc/thanos_stores/stores.yml'
+                        - '--store.sd-interval=5m'
+                        # Handle certs
+                        - '--grpc-client-tls-secure'  # use tls to talk to remote store server
+                        - '--grpc-client-tls-ca=/etc/thanos_certs/root-ca' # root ca for verifying remote server. I was unable to get igore to work so we must have root ca for all TLS servers. Just combine into a single file if more than one. This makes selfsigned certs pretty much unusable.
+                        # Optional debuging
+                        - '--log.level=info'  # debug, info
+                        - '--log.format=json' # logfmt logfmt or json                          
+                depends_on:
+                        - thanos-sidecar_service
+                        - thanos-store-gateway_service
+                restart:
+                        always 
+
+# Global Thanos - Store Gateway
+        thanos-store-gateway_service:
+                image: quay.io/thanos/thanos:v0.14.0
+                volumes:
+                        # Config files. Same as for Sidecar
+                        - {{ base_install_dir }}/thanos/config/:/etc/thanos/
+                        # Map the node certs for TLS.
+                        - /etc/ssl/certs/{{ hank_name }}_fabric-testbed_net.pem:/etc/thanos_certs/cert
+                        - /etc/pki/tls/private/{{ hank_name }}_fabric-testbed_net.key:/etc/thanos_certs/key
+                command:
+                        - 'store'
+                        - '--grpc-address=0.0.0.0:10911'
+                        - '--http-address=0.0.0.0:10912'
+                        - '--data-dir=/tmp/thanos/store'
+                        - '--objstore.config-file=/etc/thanos/object_store_config.yml'
+                        # Unfortunatly certs are needed since we have to use TLS everywhere for thanos :(
+                        - '--grpc-server-tls-cert=/etc/thanos_certs/cert' ##
+                        - '--grpc-server-tls-key=/etc/thanos_certs/key' ##
+                restart: always
+                ports:
+                        - {{ ansible_host }}:10911:10911
+
+# Global Compactor
+# The Compactor MUST NOT be run anywhere except on the global metrics.
+# https://github.com/thanos-io/thanos/blob/master/docs/components/compact.md
+# Recommends 100GB disk space
+        thanos-compactor_service:
+                image: quay.io/thanos/thanos:v0.14.0
+                volumes:
+                        # Config files. Same as for Sidecar
+                        - {{ base_install_dir }}/thanos/config/:/etc/thanos/
+                        - {{ base_data_dir }}/thanos/compact/tmp/:/tmp/thanos-compact
+                command:
+                        - 'compact'
+                        - '--wait'              # don't exit after compaction, wait and check for more 
+                        - '--wait-interval=5m'  # delay before checking for new compaction
+                        - '--data-dir="/tmp/thanos-compact"'
+                        - '--objstore.config-file=/etc/thanos/object_store_config.yml'
+
+# Global Grafana
+        grafana_service:
+                image: grafana/grafana:7.4.3
+                #user: "472"
+                user: "${UID}:${GID}"
+                volumes:
+                    - {{ base_data_dir }}/grafana/data:/var/lib/grafana
+                    - {{ base_install_dir }}/grafana/provisioning/:/etc/grafana/provisioning/
+                    - {{ base_install_dir }}/grafana/custom:/etc/grafana/custom/
+                    # Map the node certs for CiLogon TLS in  custom.ini.
+                    - /etc/ssl/certs/{{ hank_name }}_fabric-testbed_net.pem:/etc/grafana/certs/cert
+                    - /etc/pki/tls/private/{{ hank_name }}_fabric-testbed_net.key:/etc/grafana/certs/key
+
+                env_file:
+                    - {{ base_install_dir }}/grafana/env_file
+                # use nginx as tls proxy so no ports exposed here
+                #ports:
+                #    - 3000:3000
+                depends_on:
+                    - prometheus_service
+                    - thanos-querier_service
+                restart: always
+
+# Global NGINX
+        nginx_service:
+                image: nginx:1.19
+                volumes:
+                        - {{ base_install_dir }}/nginx/config/nginx.conf:/etc/nginx/nginx.conf
+                        - {{ base_install_dir }}/nginx/config/htpasswd:/etc/nginx/htpasswd
+                        # TLS configs snippet.
+                        - {{ base_install_dir }}/nginx/config/ssl_snippet.conf:/etc/nginx/ssl_snippet.conf
+                        # TLS certs already on node.
+                        - /etc/ssl/certs/{{hank_name}}_fabric-testbed_net.pem:/etc/nginx/cert_file
+                        - /etc/ssl/certs/{{hank_name}}_fabric-testbed_net_interm.cer:/etc/nginx/root_CA_cert_plus_intermediates_file
+                        - /etc/pki/tls/private/{{hank_name}}_fabric-testbed_net.key:/etc/nginx/key_file
+                depends_on:
+                        - grafana_service
+                        - prometheus_service
+                        - thanos-querier_service
+                ports:
+                        - 80:80         # Redirected to 443
+                        - 443:443       # /grafana for grafana interface
+                        - 9090:9090     # prometheus stats
+                        - 10922:10922   # thanos stats
+                        - 9093:9093     # alertmanager
+# Global Docker Monitor
+        docker_monitor_service:
+                image: prometheusnet/docker_exporter
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+
+        blackbox-exporter_service:
+                image: prom/blackbox-exporter
+                volumes:
+                        # config files
+                        - {{ base_install_dir }}/blackbox/config/:/config
+                command:
+                        - --config.file=/config/blackbox.yml
+                #ports:
+                #        - 9115:9115
+                restart: always
+
+# Global Alertmanager
+        {# alertmanager_service:
+                image: prom/alertmanager
+                command:
+                        - '--config.file=alertmanager.yml'
+                volumes:
+                        - {{ base_install_dir }}/alertmanager/config/alertmanager.yml:/alertmanager/alertmanager.yml
+                #ports:
+                #        - 9093:9093 #}
+
+
+
