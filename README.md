@@ -101,7 +101,32 @@ Tested using CentOS 8
 1) Add node_exporters to head and worker nodes using the Ansible script `????`
 1) Goto `metrics.fabric-testbed.net/grafana/explore` and use the PromQl query `up {rack="<hank-name>"}. You should get results.
 
-### Conguration Files That Need To Be Edited
+### Ansible Variable Files That Need To Be Edited
+
+In the ansible role `prometheus`:
+##### `prometheus/vars/main.yml` 
+Has variables that don't change often. The `base_install_dir` and `base_data_dir` can be changed if you need to install in a different location, however use the default when possible since some of the monitoring variables such as the docker container names are base on the directory names.  
+Here you can also set specific values for controlling what data is collected in the `node_exporter_enabled_collectors` section. Be aware that some of the non-default values can increase the size of the collected data exponentially. See the notes in the file.
+
+##### `prometheus/vars/sensitive.yml'
+This is an example of sensitive variables such as passwords and keys that need to be set.  The file should be copied using ansible vault to encrypt your values.  Use `ansible-vault edit sensitive.yml` to create a new file and past in the data from the `sensitive_example.yml`. Edit as needed. See the file for details on needed variables. The ceph system secret_key and access_key will have to be aquired for the specific ceph system you will be connecting to. The other variables can be created as you see fit.
+
+
+
+
+## Run Playbooks
+Below are the commands to run the ansible playbooks to install the main system and the node_exporters on the head node and worker nodes. You may optionally add these flags.
+* Add `--check` to run without actually making changes on remote host.  
+* Add `--ask-pass` if password needed to login to node.  
+* Add `--ask-become-pass` if sudo password needed on node.  
+
+### Main System
+Run the playbook using `ansible-playbook -i hosts.yml main_playbook.yml`.  
+
+### Node Exporters
+Run the playbook using `ansible-playbook -i hosts.yml node_exporter_playbook.yml`.  
+
+
 
 * `prometheus/config/prometheus_config.yml`  
 Set the rack name to the site acronym found at [Fabric Sites](https://fabric-testbed.atlassian.net/wiki/spaces/FP/pages/168624158/FABRIC+Site+Documentation)

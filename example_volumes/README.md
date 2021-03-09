@@ -1,0 +1,2 @@
+This directory shows an example of needed directories that will be installed when using the ansible scripts.
+Note that this is an example and may not accurately represent the current install directory structure.
