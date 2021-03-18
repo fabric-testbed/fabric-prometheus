@@ -91,14 +91,16 @@ Tested using CentOS 8
 * docker on head node
 * docker-compose on head node
 * Ansible on any machine that can access the rack's nodes
+* The needed ansible role on the local ansible machine to install node-exporter. To install use 
+`ansible-galaxy install cloudalchemy.node-exporter`
 
-### Steps
+### Install Overview
 1) Clone this repo.
 1) Edit the ansible variables.
 1) Run Ansible scripts.
-1) Run `docker-compose up` in the root directory where the `docker-compose.yml` is located.
-1) Goto Prometheus status page....
-1) Add node_exporters to head and worker nodes using the Ansible script `????`
+1) Login to the rack ad start up the docker containers using `docker-compose up` in the root directory where the `docker-compose.yml` is located.
+1) Goto Prometheus status page and check that the targets are being collected. TODO add links and example for this...
+1) Add the rack to the global scrape file. TBD how to update this, for now contact Charles Carpenter.
 1) Goto `metrics.fabric-testbed.net/grafana/explore` and use the PromQl query `up {rack="<hank-name>"}. You should get results.
 
 ### Ansible Variable Files That Need To Be Edited
@@ -119,34 +121,35 @@ Below are the commands to run the ansible playbooks to install the main system a
 * Add `--check` to run without actually making changes on remote host.  
 * Add `--ask-pass` if password needed to login to node.  
 * Add `--ask-become-pass` if sudo password needed on node.  
+* Add `--ask-vault-pass` if you have an encrypyted variable file.
 
-### Main System
-Run the playbook using `ansible-playbook -i hosts.yml main_playbook.yml`.  
+### Installing Rack Systems
+The rack system consists of the Prometheus and supporting containers installed on a head node. Each worker node will have a node_exporter installed.
+To run the ansible scripts you need to create the `sensitive_vars.yml` file.
 
-### Node Exporters
-Run the playbook using `ansible-playbook -i hosts.yml node_exporter_playbook.yml`.  
-
-
-
-* `prometheus/config/prometheus_config.yml`  
-Set the rack name to the site acronym found at [Fabric Sites](https://fabric-testbed.atlassian.net/wiki/spaces/FP/pages/168624158/FABRIC+Site+Documentation)
-* `thanos/config/object_store_config.yml`  
-Set your CEPH access key and secret.
-* `nginx/config/nginx.conf`  
-Set you VM url. Set cert filenames to match below certs.
-* `nginx/certs`  
-Add the ssl certs for nginx.
-* `grafana/custom/custom.ini`  
-Set your server url.  
-If you are enabling CiLogon, set the client_id and client_secret. TBD TODO add links for details when system ready.
-* `grafana/env_file`
-Add an admin password so you can login to Grafana. `GF_SECURITY_ADMIN_PASSWORD=yourpassword`
-
-## Node Exporter
-There is now an Ansible script in the ansible/node_exporter directory that will perform the node_exporter install. See the ansible/node_exporter/README.md for details.  
+#### Running as a Fabric Rack Deployment
+The prometheus ansible install uses hosts and vars contained in fabric-deployment/ansible github repo.  If you are not installing to the fabric system or you are testing then you will have to create your own set of hosts and var files. If you do have access, then follow these instructions.
+* Clone this repo.
+* Change to ansible directory in the repo.
+* Place the `sensitive_vars.yml` file into the ansible directory.
+* Download the deployment hosts and var files using `ansible-playbook download_hosts_and_vars_playbook.yml`
+* Edit `prometheus_playbook.yml` to include the rack hosts needed in the `- hosts` line.
+* Run `ansible-playbook -i tmp/working/fabric-hosts prometheus_playbook.yml --ask-vault-pass`
+* You may cleanup the temporary files created by running `ansible-playbook remove_downloaded_hosts_and_vars_playbook.yml`
 
 
-## Global Instalation
-TODO
+#### Running a Test or Other Deployment
+If you do not have access to the fabric-deployment repo or you are otherwise doing your own install then the hosts and vars will need to be setup. 
+* Create the needed hosts and vars files. TODO expand help here
+* Clone this repo.
+* Change to ansible directory in the repo.
+* Place the `sensitive_vars.yml` file into the ansible directory.
+* Edit `prometheus_playbook.yml` to include the rack hosts needed in the `- hosts` line.
+* Run `ansible-playbook -i your-hosts-file prometheus_playbook.yml --ask-vault-pass`
 
-
+### Global Metrics System
+The global machine install does not need the fabric-deployment files.
+* Clone this repo.
+* Change to the ansible directory in the repo.
+* Place the `global_sensitive_vars.yml` file into the ansible directory.
+* Run `ansible-playbook -i global_metrics_hosts.yml global_metrics_playbook.yml --ask-vault-pass`
