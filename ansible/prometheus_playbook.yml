@@ -1,0 +1,39 @@
+---
+- hosts: renc
+#- hosts: lbnl, uky, renc
+
+  roles:
+    - prometheus
+    # Note must call prometheus before cloudalchemy.node-exporter.
+    - cloudalchemy.node-exporter
+
+  vars_files: 
+    - "sensitive_vars.yml"
+
+
+# ansible-playbook -i fabric-hosts prometheus_playbook.yml --check --diff
+#  ansible-playbook -i tmp/working/fabric-hosts prometheus_playbook.yml --check --diff --ask-vault-pass
+
+
+# Host Groups are set up in the patterns shown below.
+# By using the rack name, ie "renc" will import "renc_head" and "renc_worker".
+# The roles will then apply the tasks based on if the node's component_type is head or worker.
+# - hosts: renc
+#   roles:
+#     - ....
+
+# [renc_head]
+# renc-hn ansible_host=192.168.11.10
+
+# [renc_worker]
+# renc-w1 ansible_host=192.168.11.11
+# renc-w2 ansible_host=192.168.11.12
+# renc-w3 ansible_host=192.168.11.13
+
+# [renc_switch]
+# renc-mgt-sw  ansible_host=192.168.11.2
+# renc-data-sw ansible_host=192.168.11.3
+
+# [renc:children]
+# renc_head
+# renc_worker
