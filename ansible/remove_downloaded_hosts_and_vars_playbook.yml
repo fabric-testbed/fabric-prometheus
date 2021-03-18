@@ -1,0 +1,9 @@
+---
+# Removes the downloaded files and dirs with host info from the fabric-deployment
+- hosts: localhost
+  tasks:
+
+  - name: Remove the temporary downloaded dirs and files
+    file:
+      path: ./tmp
+      state: absent
