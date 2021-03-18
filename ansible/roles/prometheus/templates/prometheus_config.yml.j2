@@ -57,7 +57,7 @@ scrape_configs:
   # PTP Server
   {# - job_name: 'timemachine'
     static_configs:
-            - targets: ['{{time_server_IP}}']
+            - targets: ['{{ hank_name }}-time.fabric-testbed.net']
     metrics_path: /snmp
     params:
             module: ['TMI-COMMON-SHI']
@@ -76,7 +76,7 @@ scrape_configs:
          module: [http_401]
     static_configs:
          - targets:
-                 - '{{ time_server_IP }}'
+                 - '{{ hank_name }}-time.fabric-testbed.net'
 
     relabel_configs:
             - source_labels: [__address__]
