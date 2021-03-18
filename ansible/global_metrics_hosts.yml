@@ -1,0 +1,12 @@
+
+[metrics]
+global-metrics ansible_host=128.163.140.26 component_type=metrics hank_name=metrics hostname=metrics.fabric-testbed.net
+
+
+#metrics.fabric-testbed.net
+#ip 128.163.140.26
+
+#ansible-playbook -i metrics-hosts.yml global_metrics_playbook.yml  --diff --ask-become-pass -e "base_install_dir=/opt/test" -e "base_data_dir=/opt/test_data"
+
+#ansible-playbook -i metrics-hosts.yml global_metrics_playbook.yml  --diff --ask-become-pass -e "base_install_dir=/opt/test" -e "base_data_dir=/opt/test_data" --check
+

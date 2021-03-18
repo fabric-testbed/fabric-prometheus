@@ -1,0 +1,21 @@
+---
+#- hosts: renc
+- hosts: metrics
+
+  tasks:
+
+    - name: Show vars
+      ansible.builtin.debug:
+        msg: ceph endpoint in playbook {{ceph_endpoint}}
+  roles:
+    - prometheus
+    # # Note must call prometheus before cloudalchemy.node-exporter.
+    - cloudalchemy.node-exporter
+
+
+  vars_files: 
+    - "global_metrics_sensitive_vars.yml"
+
+
+# ansible-playbook -i fabric-hosts prometheus_playbook.yml --check --diff
+
