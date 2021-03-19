@@ -110,10 +110,8 @@ In the ansible role `prometheus`:
 Has variables that don't change often. The `base_install_dir` and `base_data_dir` can be changed if you need to install in a different location, however use the default when possible since some of the monitoring variables such as the docker container names are base on the directory names.  
 Here you can also set specific values for controlling what data is collected in the `node_exporter_enabled_collectors` section. Be aware that some of the non-default values can increase the size of the collected data exponentially. See the notes in the file.
 
-##### `prometheus/vars/sensitive.yml'
-This is an example of sensitive variables such as passwords and keys that need to be set.  The file should be copied using ansible vault to encrypt your values.  Use `ansible-vault edit sensitive.yml` to create a new file and past in the data from the `sensitive_example.yml`. Edit as needed. See the file for details on needed variables. The ceph system secret_key and access_key will have to be aquired for the specific ceph system you will be connecting to. The other variables can be created as you see fit.
-
-
+##### `prometheus/vars/sensitive.yml`
+This is an example of sensitive variables such as passwords and keys that need to be set.  The file should be copied using ansible vault to encrypt your values.  Use `ansible-vault edit sensitive.yml` to create a new file and past in the data from the `sensitive_example.yml`. Edit as needed. See the file for details on needed variables. The ceph system secret_key and access_key will have to be aquired for the specific ceph system to which you will be connecting. The other variables can be created as you see fit.
 
 
 ## Run Playbooks
