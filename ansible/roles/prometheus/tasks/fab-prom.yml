@@ -23,14 +23,14 @@
       block:
         - name: "Create Prometheus directories"
           file:
-            #path: "{{base_install_dir}}/prometheus/{{item}}"
-            path: "{{base_install_dir}}/prometheus"
+            path: "{{base_install_dir}}/prometheus/{{item}}"
+            #path: "{{base_install_dir}}/prometheus"
             state: directory
             recurse: yes
             owner: fab-prom
             group: fab-prom
-          # with_items:
-          #   - [ "config", "data" ]
+          with_items:
+            - [ "config", "secrets" ]
 
         - name: "Create Prometheus Data directories"
           # This directory could be 10's of GB.
@@ -45,37 +45,41 @@
           block:
             - name: Install Default Prometheus Config
               template: 
-                # TODO add backup to all config files backup: yes
+                backup: yes
                 src: 'templates/prometheus_config.yml.j2'
-                dest: "{{ base_install_dir }}/prometheus/prometheus_config.yml"
+                dest: "{{ base_install_dir }}/prometheus/config/prometheus_config.yml"
                 owner: fab-prom
                 group: fab-prom
 
             - name: Install Targets File for Node Exporters
               template: 
+                backup: yes
                 src: 'templates/node_targets.yml.j2'
-                dest: "{{ base_install_dir }}/prometheus/node_targets.yml"
+                dest: "{{ base_install_dir }}/prometheus/config/node_targets.yml"
                 owner: fab-prom
                 group: fab-prom
+
+            - name: Install Targets File for Ping
+              template: 
+                backup: yes
+                src: 'templates/ping_targets.yml.j2'
+                dest: "{{ base_install_dir }}/prometheus/config/ping_targets.yml"
+                owner: fab-prom
+                group: fab-prom
+
+
           when: component_type=="head"
 
         - name: Install Global Prometheus Config
           block:
             - name: Install Default Global Prometheus Config
               template: 
+                backup: yes
                 src: 'templates/global/prometheus_config.yml.j2'
-                dest: "{{ base_install_dir }}/prometheus/prometheus_config.yml"
+                dest: "{{ base_install_dir }}/prometheus/config/prometheus_config.yml"
                 owner: fab-prom
                 group: fab-prom
 
-            # - name: Install Targets File for Node Exporters
-            #   #become: true
-            #   template: 
-            #     src: 'templates/node_targets.yml.j2'
-            #     #dest: "{{ base_install_dir }}/prometheus/config/prometheus_config.yml"
-            #     dest: "{{ base_install_dir }}/prometheus/node_targets.yml"
-            #     owner: fab-prom
-            #     group: fab-prom
           when: component_type=="metrics"
       become: true
 
@@ -107,7 +111,7 @@
           block:
             - name: "Add Grafana thanos datasource provisioning."
               copy: 
-                #src: 'files/grafana_datasources_thanos.yml'
+                backup: yes
                 src: 'files/grafana_datasources_local_prometheus.yml'
                 dest: "{{ base_install_dir }}/grafana/provisioning/datasources/datasources.yml"
                 owner: fab-prom
@@ -115,6 +119,7 @@
 
             - name: "Add Grafana custom ini."
               template: 
+                backup: yes
                 src: 'templates/grafana_custom.ini.j2'
                 dest: "{{ base_install_dir }}/grafana/custom/custom.ini"
                 owner: fab-prom
@@ -122,6 +127,7 @@
 
             - name: "Add Grafana docker env file to enable above custom ini."
               template: 
+                backup: yes
                 src: 'templates/grafana_env.j2'
                 dest: "{{ base_install_dir }}/grafana/env_file"
                 owner: fab-prom
@@ -134,7 +140,7 @@
           block:
             - name: "Add Global Metrics Grafana thanos datasource provisioning."
               copy: 
-                #src: 'files/grafana_datasources_thanos.yml'
+                backup: yes
                 src: 'files/grafana_datasources_thanos.yml'
                 dest: "{{ base_install_dir }}/grafana/provisioning/datasources/datasources.yml"
                 owner: fab-prom
@@ -142,6 +148,7 @@
 
             - name: "Add Global Metrics Grafana custom ini."
               template: 
+                backup: yes
                 src: 'templates/global/grafana_custom.ini.j2'
                 dest: "{{ base_install_dir }}/grafana/custom/custom.ini"
                 owner: fab-prom
@@ -149,6 +156,7 @@
 
             - name: "Add Global Metrics Grafana docker env file to enable above custom ini."
               template: 
+                backup: yes
                 src: 'templates/grafana_env.j2'
                 dest: "{{ base_install_dir }}/grafana/env_file"
                 owner: fab-prom
@@ -171,6 +179,7 @@
 
         - name: "Add Blackbox default config."
           copy: 
+            backup: yes
             src: 'files/blackbox_config.yml'
             dest: "{{ base_install_dir }}/blackbox/config/blackbox.yml"
             owner: fab-prom
@@ -200,6 +209,7 @@
           block:
             - name: "Add Global Stores"
               template:
+                backup: yes
                 src: 'templates/global/thanos_stores.yml.j2'
                 dest: "{{ base_install_dir }}/thanos/config/stores.yml"
                 owner: fab-prom
@@ -222,6 +232,7 @@
 
         - name: "Add SNMP config."
           copy: 
+            backup: yes
             src: 'files/snmp.yml'
             dest: "{{ base_install_dir }}/snmp/config/snmp.yml"
             owner: fab-prom
@@ -251,6 +262,7 @@
 
         - name: "Add Global Metrics NGINX config."
           template: 
+            backup: yes
             src: 'templates/global/nginx.conf.j2'
             dest: "{{ base_install_dir }}/nginx/config/nginx.conf"
             owner: fab-prom
@@ -284,7 +296,8 @@
     - name: "Set up Docker Compose on Head Node"
       block:
         - name: "Add Docker-Compose file."
-          template: 
+          template:
+            backup: yes 
             src: 'templates/docker-compose.yml.j2'
             dest: "{{ base_install_dir }}/docker-compose.yml"
             owner: fab-prom
@@ -296,6 +309,7 @@
       block:
         - name: "Add Global Docker-Compose file."
           template: 
+            backup: yes
             src: 'templates/global/docker-compose.yml.j2'
             dest: "{{ base_install_dir }}/docker-compose.yml"
             owner: fab-prom

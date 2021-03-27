@@ -5,14 +5,17 @@ services:
         prometheus_service:
                 # The Prometheus Client
                 image: prom/prometheus:v2.23.0
+                # note v2.19.2  on uky due to docker pull problem
                 user: "${UID}:${GID}"
                 volumes:
                         # config files
-                        - {{ base_install_dir }}/prometheus:/etc/prometheus/
+                        - {{ base_install_dir }}/prometheus/config:/etc/prometheus/config/
+                        # secret files
+                        - {{ base_install_dir }}/prometheus/secret:/etc/prometheus/secret/
                         # TSDB, WAL, chunks
                         - {{ base_data_dir }}/prometheus:/prometheus
                 command:
-                        - '--config.file=/etc/prometheus/prometheus_config.yml'
+                        - '--config.file=/etc/prometheus/config/prometheus_config.yml'
                         - '--storage.tsdb.path=/prometheus'
                         - '--storage.tsdb.max-block-duration=2h'
                         - '--storage.tsdb.min-block-duration=2h'
@@ -144,6 +147,7 @@ services:
                         - /etc/ssl/certs/{{hank_name}}-hn_fabric-testbed_net.pem:/etc/nginx/cert_file
                         - /etc/ssl/certs/{{hank_name}}-hn_fabric-testbed_net_interm.cer:/etc/nginx/root_CA_cert_plus_intermediates_file
                         - /etc/pki/tls/private/{{hank_name}}-hn_fabric-testbed_net.key:/etc/nginx/key_file
+                restart: always
                 depends_on:
                         - prometheus_service
                         - thanos-querier_service
@@ -151,11 +155,13 @@ services:
                         - grafana_service
 {% endif %}
 
+
 # Docker Monitor
         docker-monitor_service:
                 image: prometheusnet/docker_exporter
                 volumes:
                         - /var/run/docker.sock:/var/run/docker.sock
+                restart: always
 
 # SNMP Exporter
         snmp-exporter_service:
@@ -166,6 +172,7 @@ services:
                         # See https://github.com/prometheus/snmp_exporter/tree/master/generator for generation details.
                         - {{ base_install_dir }}/snmp/config/snmp.yml:/etc/snmp/snmp.yml
                         #- ./snmp/config/snmp.yml:/etc/snmp/snmp.yml
+                restart: always
 
 # Blackbox Exporter
 {% if 'blackbox' in fab_components %}

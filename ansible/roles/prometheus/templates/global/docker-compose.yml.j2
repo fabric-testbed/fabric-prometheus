@@ -8,11 +8,13 @@ services:
                 user: "${UID}:${GID}"
                 volumes:
                         # config files
-                        - {{ base_install_dir }}/prometheus:/etc/prometheus/
+                        - {{ base_install_dir }}/prometheus/config:/etc/prometheus/config/
+                        # secret
+                        - {{ base_install_dir }}/prometheus/secrets:/etc/prometheus/secrets/
                         # TSDB, WAL, chunks
                         - {{ base_data_dir }}/prometheus:/prometheus
                 command:
-                        - '--config.file=/etc/prometheus/prometheus_config.yml'
+                        - '--config.file=/etc/prometheus/config/prometheus_config.yml'
                         - '--storage.tsdb.path=/prometheus'
                         - '--storage.tsdb.max-block-duration=2h'
                         - '--storage.tsdb.min-block-duration=2h'
@@ -122,6 +124,7 @@ services:
                         - '--wait-interval=5m'  # delay before checking for new compaction
                         - '--data-dir="/tmp/thanos-compact"'
                         - '--objstore.config-file=/etc/thanos/object_store_config.yml'
+                restart: always
 
 # Global Grafana
         grafana_service:
@@ -168,11 +171,13 @@ services:
                         - 9090:9090     # prometheus stats
                         - 10922:10922   # thanos stats
                         - 9093:9093     # alertmanager
+                restart: always
 # Global Docker Monitor
         docker_monitor_service:
                 image: prometheusnet/docker_exporter
                 volumes:
                         - /var/run/docker.sock:/var/run/docker.sock
+                restart: always
 
         blackbox-exporter_service:
                 image: prom/blackbox-exporter
