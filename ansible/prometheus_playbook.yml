@@ -1,11 +1,12 @@
 ---
-- hosts: renc
+- hosts: "{{ variable_hosts | default('x')}}"
+#- hosts: renc
 #- hosts: lbnl, uky, renc
 
   roles:
     - prometheus
     # Note must call prometheus before cloudalchemy.node-exporter.
-    - cloudalchemy.node-exporter
+    ##- cloudalchemy.node-exporter
 
   vars_files: 
     - "sensitive_vars.yml"

@@ -1,0 +1,8 @@
+
+# - vars:
+#     variable_hosts: renc
+- import_playbook: dc_down_playbook.yml
+
+- import_playbook: prometheus_playbook.yml
+
+- import_playbook: dc_up_playbook.yml
