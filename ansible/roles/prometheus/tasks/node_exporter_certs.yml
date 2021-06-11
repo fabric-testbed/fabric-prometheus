@@ -35,7 +35,7 @@
       group: node-exp
 
   - name: create csr
-    become: true
+    become: yes
     openssl_csr:
       common_name: '{{ hostname }}'
       path: /etc/node_exporter/tls.csr
@@ -52,4 +52,4 @@
       owner: node-exp
       group: node-exp
 
-  become: true
+  become: yes

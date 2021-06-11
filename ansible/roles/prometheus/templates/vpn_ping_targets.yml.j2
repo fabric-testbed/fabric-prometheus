@@ -1,0 +1,17 @@
+--- 
+# FILE: vpn_ping_targets.yml
+# Ansible generated ping targets file for testing fabric VPN connectivity.
+# Basically pings all the head nodes over the management network.
+
+{% for hn in groups[fabric_head] %}
+- targets:
+        - {{hostvars[g].ansible_host}}
+  labels:
+        subdomain: {{g}}
+        network: operations 
+        reason: vpn
+{% endfor %}
+
+
+
+

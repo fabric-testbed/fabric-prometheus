@@ -1,1 +1,32 @@
 ---
+
+
+
+
+{% for k in datacenter_releases %}
+{{ k }}
+{% set parts = k.split("_") %}
+{{ parts}}
+{{ parts | join("X")}}
+
+{{ [0,1] | map('extract', parts) | list }}
+
+datacenter: {{ parts[0] }}_{{ parts[1] }}
+or just
+datacenter: {{ parts[0] }}
+
+
+{{ parts | difference( [0,1] | map('extract', parts) | list ) }}
+
+Release: {{ (parts | difference( [0,1] | map('extract', parts) | list )) | join("_") }}
+
+
+  {% for h in groups[k] %}
+  
+   prefix: {{ h }}
+   instance: {{hostvars[h].ansible_host}}
+   {% endfor %}
+
+{% endfor %}
+
+

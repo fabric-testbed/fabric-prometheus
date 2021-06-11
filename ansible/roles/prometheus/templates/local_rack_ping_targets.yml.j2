@@ -1,7 +1,7 @@
 ---
-# Set ping targets for devices running on the rack.
-# I am using h.split("-")[1] to get the device type by removing the first part which is the hank name
-#   
+# File: common_ping_targets.yml
+# Ansible generated ping targets for {{hank_name}} Fabric rack.
+# Sets ping targets for devices running on the rack.
 
 
 # Head Node
@@ -11,7 +11,8 @@
   labels:
         job: ping
         device: head
-        instance_name: {{h}}
+        subdomain: {{h}}
+        release: prod
         relation: inner
 {% endfor %}
 
@@ -22,45 +23,49 @@
   labels:
         job: ping
         device: worker
-        instance_name: {{h}}
+        subdomain: {{h}}
+        release: prod
         relation: inner
 {% endfor %}
 
 
-# switch
+# Switches
 {% for h in groups[hank_name+"_switch"] %}
 - targets:
         - {{ hostvars[h].ansible_host }}
   labels:
         job: ping
         device: {{ h.split("-")[1] }}-sw
-        instance_name: '{{h}}'
+        subdomain: '{{h}}'
+        release: prod
         relation: inner
 {% endfor %}
 
 
 
-# storage
+# Storage
 {% for h in groups[hank_name+"_storage"] %}
 - targets:
         - {{ hostvars[h].ansible_host }}
   labels:
         job: ping
         device: {{ h.split("-")[1] }}
-        instance_name: {{h}}
+        subdomain: {{h}}
+        release: prod
         relation: inner
 {% endfor %}
 
 
 
-# others
+# Others
 {% for h in groups[hank_name+"_others"] %}
 - targets:
         - {{ hostvars[h].ansible_host }}
   labels:
         job: ping
         device: {{ h.split("-")[1] }}
-        instance_name: {{h}}
+        subdomain: {{h}}
+        release: prod
         relation: inner
 {% endfor %}
 

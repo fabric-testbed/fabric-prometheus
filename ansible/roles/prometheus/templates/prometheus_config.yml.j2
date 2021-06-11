@@ -124,7 +124,7 @@ scrape_configs:
 
     file_sd_configs:
       - files:
-            - 'ping_targets.yml'
+            - '*ping_targets.yml'
 
     relabel_configs:
             - source_labels: [__address__]

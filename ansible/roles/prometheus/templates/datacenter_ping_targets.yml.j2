@@ -1,0 +1,23 @@
+--- 
+# FILE: datacenter_ping_targets.yml
+# Ansible generated ping targets file for development nodes.
+
+{% for release_group in datacenter_releases %}
+# {{ release_group }} nodes
+{% set parts = release_group.split("_") %}
+{% set datacenter_name = parts[0] %}
+{% set release_type = (parts | difference( [0,1] | map('extract', parts) | list )) | join("_") %}
+
+{% for g in groups[release_group] %}
+- targets:
+        - {{hostvars[g].ansible_host}}
+  labels:
+        subdomain: {{g}}
+        datacenter: {{ datacenter_name }}
+        release: {{ release_type }} 
+        network: management 
+{% endfor %}
+{% endfor %}
+
+
+

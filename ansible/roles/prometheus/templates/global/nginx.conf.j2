@@ -19,7 +19,7 @@ server {
         server {
                 listen	443 ssl http2;
                 listen [::]:443 ssl http2;
-                server_name {{hostname}};
+                server_name {{ hostname }};
                 
                 include ssl_snippet.conf;
                         
@@ -33,7 +33,7 @@ server {
         # Prometheus status page - Add SSL
         server {
                 listen  9090 ssl http2;
-                server_name {{hostname}};
+                server_name {{ hostname }};
 
                 include ssl_snippet.conf;
 
@@ -54,7 +54,7 @@ server {
         # Thanos status page - Add SSL
         server {
                 listen  10922 ssl http2;
-                server_name {{hostname}};
+                server_name {{ hostname }};
 
                 include ssl_snippet.conf;
 
@@ -75,7 +75,7 @@ server {
         # Alert Manager status page - Add SSL
         server {
                 listen  9093 ssl http2;
-                server_name {{hostname}};
+                server_name {{ hostname }};
 
                 include ssl_snippet.conf;
 

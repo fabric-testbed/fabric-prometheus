@@ -1,0 +1,30 @@
+#- import_playbook: dc_down_playbook.yml
+
+- hosts: localhost
+  tasks:
+    - name: build a subgroups list
+      set_fact: 
+        datacenter_releases: "{{ ((datacenter_releases | default([])) + hostvars[item].group_names) | difference(parent) }}"
+        cacheable: yes
+      with_items: "{{groups[parent]}}"
+
+
+    - debug: var=datacenter_releases
+
+
+    # - name: build a xxxxx list
+    #   set_fact: release_nodes="{{ (release_nodes | default([])) + groups[item] }}"
+      
+    #   with_items: "{{datacenter_releases}}"
+
+    # - debug: var=release_nodes
+
+    - name: test template
+      template: 
+        src: roles/prometheus/templates/datacenter_ping_targets.yml.j2
+        dest: /home/charles/output.test.yml
+
+  vars:
+    parent: 'uky_datacenter'
+
+#- import_playbook: dc_up_playbook.yml

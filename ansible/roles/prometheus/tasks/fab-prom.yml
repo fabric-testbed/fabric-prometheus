@@ -16,7 +16,7 @@
             system: true
             create_home: false
             home: /
-      become: true
+      become: yes
 
 # PROMETHEUS #
     - name: "Create Prometheus Directories"
@@ -62,11 +62,10 @@
             - name: Install Targets File for Ping
               template: 
                 backup: yes
-                src: 'templates/ping_targets.yml.j2'
-                dest: "{{ base_install_dir }}/prometheus/config/ping_targets.yml"
+                src: 'templates/local_rack_ping_targets.yml.j2'
+                dest: "{{ base_install_dir }}/prometheus/config/local_rack_ping_targets.yml"
                 owner: fab-prom
                 group: fab-prom
-
 
           when: component_type=="head"
 
@@ -80,8 +79,19 @@
                 owner: fab-prom
                 group: fab-prom
 
+
+            - name: Install Targets File for Ping
+              template: 
+                backup: yes
+                src: 'templates/global/ping_targets.yml.j2'
+                dest: "{{ base_install_dir }}/prometheus/config/ping_targets.yml"
+                owner: fab-prom
+                group: fab-prom
+
+
+
           when: component_type=="metrics"
-      become: true
+      become: yes
 
 # GRAFANA #
     - name: "Create Grafana Directories and Files"
@@ -164,7 +174,7 @@
 
           when: component_type=="metrics"
       when: "'grafana' in fab_components"
-      become: true
+      become: yes
 
 # BLACKBOX #
     - name: "Create Blackbox Directories"
@@ -185,7 +195,7 @@
             owner: fab-prom
             group: fab-prom
       when: "'blackbox' in fab_components"
-      become: true
+      become: yes
 
 # THANOS #
     - name: "Create Thanos Directories"
@@ -216,7 +226,7 @@
                 group: fab-prom
               
           when: component_type=="metrics"
-      become: true
+      become: yes
 
 
 # SNMP #
@@ -237,7 +247,7 @@
             dest: "{{ base_install_dir }}/snmp/config/snmp.yml"
             owner: fab-prom
             group: fab-prom
-      become: true
+      become: yes
 
 # NGINX #
     - name: "Create NGINX Directories"
@@ -290,7 +300,7 @@
             dest: "{{ base_install_dir }}/nginx/config/ssl_snippet.conf"
             owner: fab-prom
             group: fab-prom
-      become: true
+      become: yes
 
 # DOCKER-COMPOSE #
     - name: "Set up Docker Compose on Head Node"
@@ -303,7 +313,7 @@
             owner: fab-prom
             group: fab-prom
       when: 'component_type=="head"'
-      become: true
+      become: yes
 
     - name: "Set up Docker Compose on Global Metrics"
       block:
@@ -315,5 +325,5 @@
             owner: fab-prom
             group: fab-prom
       when: 'component_type=="metrics"'
-      become: true
+      become: yes
 
