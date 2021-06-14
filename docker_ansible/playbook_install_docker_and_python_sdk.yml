@@ -1,0 +1,26 @@
+---
+# This playbook may be required on nodes that do not have docker already installed.
+- name: Install docker and python sdk to manage docker
+  hosts: nodes
+  become: yes 
+  vars:
+          docker_users:
+                  - charles
+          #pip_install_packages:
+          #        - name: docker
+
+  pre_tasks:
+          - name: add pip
+            apt:
+                    name: python3-pip
+                    state: present
+                    update_cache: yes
+          - pip:
+                  # For python docker sdk - used by ansible to manage docker containers
+                  name: docker
+                  
+  roles:
+          #- geerlingguy.pip
+          
+          # For instaling docker and docker-compose
+          - geerlingguy.docker

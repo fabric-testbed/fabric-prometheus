@@ -1,0 +1,52 @@
+---
+# Creating the global monitoring setup.
+- hosts: monitor
+
+  vars_files:
+    - vars/geni_test_vars.yml
+
+  
+  tasks:
+    # Sanity Check
+    - pause:
+        prompt: "!!!!!!!!!!Setting up on {{ ansible_host }}. Hit enter to continue!!!!!!!!!"
+  
+
+# Stop concerned containers
+# TODO for this we can change it to SIGHUP or /-/reload 
+    - name: Stop containers
+      include_tasks: container_tasks/remove_docker_container_tasks.yml
+      vars:
+        containers_to_act_on: 
+          - alertmanager
+          - prometheus
+
+
+# PROMETHEUS
+    - name: Prometheus Setup
+      block:
+      - name: Setup Promtheus Config Files
+        include_tasks: tasks/Prometheus/add_prometheus_config_templates.yml
+        vars:
+          prometheus_config_template_files: 
+            - prometheus_config.yml
+            - test_alerts.yml
+        
+      - name: Prometheus Container
+        # Start docker container
+        include_tasks: tasks/Prometheus/prometheus_container_tasks.yml
+        vars:
+          prometheus_state: started
+
+
+# ALERTMANAGER
+    - name: Setup Alertmanager
+      block: 
+        - name: Alertmanager Config
+          include_tasks: tasks/Alertmanager/config_alertmanager_tasks.yml
+
+        - name: Alertmanager Container
+          include_tasks: tasks/Alertmanager/alertmanager_container_tasks.yml
+      vars:
+        alertmanager_template_dir: templates/geni_slice
+        alertmanager_state: started
