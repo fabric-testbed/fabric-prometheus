@@ -83,3 +83,21 @@
 #     - component_type == 'head'
 #     - set_vpn_pings is defined
 #     - set_vpn_pings
+
+
+
+
+
+
+
+###############################
+#   GENI Slice Prometheus     #
+###############################
+- name: Install Prometheus setup on a GENI Slice 
+  block:
+  - name: Install GENI Rack
+    import_tasks: geni_slice_install_tasks.yml
+  when: 
+    - install_type is defined
+    - install_type == 'geni_slice'
+

@@ -1,0 +1,18 @@
+---
+# Creating the rack monitoring setup.
+- hosts: uky
+
+  # pre_tasks:
+  #   - pause: 
+  #       prompt: "Hi"
+  roles:
+    - fabric_prometheus
+
+  vars_files:
+    #- vars/sensitive/common_rack_vars.yml
+    #- "vars/private_{{ hosts }}_vars.yml"
+    - private_uky-hn_vars.yml
+    - roles/fabric_prometheus/vars/sensitive/common_rack_vars.yml
+  vars:
+    install_type: standard_fabric_rack
+    extra_node_hosts: {}
