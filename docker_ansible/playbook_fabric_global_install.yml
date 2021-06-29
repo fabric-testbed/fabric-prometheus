@@ -3,7 +3,7 @@
 - hosts: global_node
 
   vars_files:
-    - vars/sensitive/global_metrics.yml
+    - vars/sensitive/global_metrics_vars.yml
 
 # important ! install_name will name the containers ie {{ install_name }}_prometheus  - this will be used for the setups to contact each service via the docker network
   # container states absent
@@ -73,6 +73,78 @@
         vars:
           prometheus_config_template_files: 
             - slice_ping_targets.yml
+
+
+# THANOS
+    - name: Setup Thanos
+      block:
+        # Thanos consists of serveral componets.
+        # Most components make use of the same directories and files.
+        # Some componets also use some Prometheus directories and files.  
+        # 1. Setup directories
+        - name: Thanos Directories
+          include_tasks: tasks/Thanos/setup_thanos_directories_tasks.yml
+      
+        # 2. Add configs files
+        - name: Thanos Configs
+          include_tasks: Thanos/add_thanos_config_templates_tasks.yml
+
+    - name: Thanos Containers
+      block:        
+        - name: Thanos Sidecar
+          include_tasks: Thanos/thanos_sidecar_container_tasks.yml
+#           vars:
+#             thanos_sidecar_state: absent
+#             thanos_sidecar_ip: "{{ ansible_host }}"
+#             thanos_sidecar_cert: "{{ thanos_cert }}"
+#             thanos_sidecar_key: "{{ thanos_key }}"
+#         - name: Thanos Global store  
+#           include_tasks: container_tasks/thanos_global_store_container_tasks.yml
+#           vars:
+#             thanos_store_state: absent
+#             thanos_store_ip: "{{ ansible_host }}"
+#             thanos_store_cert: "{{ thanos_cert }}"
+#             thanos_store_key: "{{ thanos_key }}"
+#         - name: Thanos Global Query
+#           include_tasks: container_tasks/thanos_global_query_container_tasks.yml
+#           vars:
+#             thanos_query_state: absent
+#             thanos_query_ip: "{{ ansible_host }}"
+#             thanos_query_cert: "{{ thanos_cert }}"
+#             thanos_query_key: "{{ thanos_key }}"
+#             thanos_query_root_ca: "{{ thanos_interm_cert }}"
+#         #- name: Thanos Global Compact
+#         #  include_tasks: container_tasks/thanos_global_compact_container_tasks.yml
+#       vars: 
+#         thanos_cert: "{{ host_cert }}"
+#         thanos_key: "{{ host_key }}"
+#         thanos_interm_cert: "{{ host_interm_cert }}"
+#       when: true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # ALERTMANAGER
     - name: Setup Alertmanager
@@ -182,7 +254,7 @@
         - name: Nginx Add Confd  Files
           include_tasks: tasks/Nginx/confd_nginx_tasks.yml
           vars:
-            server_confd_template_files: 
+            nginx_server_confd_template_files: 
               - prometheus.conf
               - alertmanager.conf
               - grafana.conf
