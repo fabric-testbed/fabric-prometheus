@@ -184,7 +184,7 @@
         - name: Nginx Add Confd  Files
           include_tasks: tasks/Nginx/confd_nginx_tasks.yml
           vars:
-            server_confd_template_files: 
+            nginx_server_confd_template_files: 
               - prometheus.conf
               ##- alertmanager.conf
               - grafana.conf
