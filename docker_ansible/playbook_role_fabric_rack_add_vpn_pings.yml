@@ -1,0 +1,15 @@
+---
+# Creating the rack monitoring setup.
+- hosts: uky
+
+  roles:
+    - fabric_prometheus
+
+  vars_files:
+    #- vars/sensitive/common_rack_vars.yml
+    #- "vars/private_{{ hosts }}_vars.yml"
+    - private_uky-hn_vars.yml
+    - roles/fabric_prometheus/vars/sensitive/common_rack_vars.yml
+  vars:
+    set_vpn_pings: yes
+    extra_node_hosts: {}
