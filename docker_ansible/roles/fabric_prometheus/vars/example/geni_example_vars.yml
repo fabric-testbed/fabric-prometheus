@@ -31,7 +31,7 @@ host_interm_cert: /etc/test_ssl/{{ hostname }}/fullchain.pem
 # GENI Slice
 # These vars are used to setup the prometheus configuration for
 #  pulling node_exporters and blackbox pings.
-
+# These will come from the inventory file later on.
 geni_slice_nodes:
     - ip:  <ip address>
       name: <node name>
@@ -58,7 +58,7 @@ grafana_templates_dir: templates/Grafana
 grafana_datasource_template_files:
   - grafana_local_prometheus_datasource.yml
 
-grafana_admin_password: <password_goes_here>
+
 
 
 # AlertManager
@@ -68,11 +68,5 @@ alertmanager_port: 9093
 # alert_manager_slack_api_url: 
 
 # NGINX
-# Prometheus and Alertmanager have web UIs that do not
-#   have any user logins. So we password protect them 
-#   using htaccess.
-fabric_prometheus_ht_user: <user_name_goes_here>
-fabric_prometheus_ht_password: <password_goes_here>
-
 nginx_template_dir: templates/Nginx
 #nginx_confd_templates_dir: templates/Nginx/conf.d
