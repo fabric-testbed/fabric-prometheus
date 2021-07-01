@@ -31,7 +31,7 @@ host_interm_cert: /etc/test_ssl/{{ hostname }}/fullchain.pem
 # GENI Slice
 # These vars are used to setup the prometheus configuration for
 #  pulling node_exporters and blackbox pings.
-geni_slice_name: alert04
+
 geni_slice_nodes:
     - ip:  <ip address>
       name: <node name>

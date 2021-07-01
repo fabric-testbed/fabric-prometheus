@@ -1,0 +1,36 @@
+---
+
+####################
+#       SNMP       #
+####################
+snmp_community_string: <snmp community string>
+
+
+####################
+#      NGINX       #
+####################        
+
+# Nginx htaccess password to access status pages.
+# Prometheus and Alertmanager have web UIs that do not
+#   have any user logins. So we password protect them 
+#   using htaccess.
+fabric_prometheus_ht_user: <user_name_goes_here>
+fabric_prometheus_ht_password: <password_goes_here>
+
+
+####################
+#  Node Exporter   #  
+####################
+# Node Exporter user & pass
+# Note that these values are only used between Prom and the 
+#   node exporter. No user will need to type them.
+node_exporter_username: <node_exporter_user_name_goes_here>
+node_exporter_password: <node_exporter_password_goes_here>
+
+# Need to figure out if there is a syntax to be able to create
+# the auth_users using the node_Exporter_usernaem
+# For now I just have it hard coded to fabric_prometheus
+# No need to edit these values, they are filled in from above value.
+node_exporter_basic_auth_users:
+  fabric_prometheus: "{{ node_exporter_password }}"
+
