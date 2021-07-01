@@ -1,0 +1,15 @@
+---
+# Installs the python sdk to allow ansible to perform operations on docker containers on the remote machine,
+
+# ensure pip is installed
+- name: Install PIP
+  become: yes 
+  apt:
+    name: python3-pip
+    state: present
+    update_cache: yes
+
+- name: Install Python Docker SDK
+  pip:
+    # For python docker sdk - used by ansible to manage docker containers
+    name: docker

@@ -1,12 +1,47 @@
 ---
 # Creating the rack monitoring setup.
-- hosts: uky
-:wq
+- hosts: monitor
+  
   roles:
     - fabric_prometheus
-
-  #vars_files:  use --extra-var="your var file name"
+  tags:
+    - monitor
+  #vars_files:  use --extra-var "@your var file name"
 
   vars:
+    add_docker: yes
+    add_python_docker_sdk: yes
+    add_node_exporter: no
+    add_monitor: yes
     install_type: geni_slice
     extra_node_hosts: {}
+
+
+
+# Note for machine running ansible you must have installed
+#  passlib with the bcrypt option
+#  pip install passlib[bcrypt]
+- hosts: nodes
+
+  pre_tasks:
+    - name: test_combos
+      debug: 
+        msg: "{{ npvals }}  {{ npvals.geni_monitoring }}"
+
+  roles:
+    - fabric_prometheus
+  tags: 
+    - exporters
+  #vars_files:  use --extra-var "@your var file name"
+
+  vars:
+    add_docker: yes
+    add_python_docker_sdk: yes
+    add_node_exporter: yes
+    install_type: geni_slice
+    
+    
+    #npvals: "{{ {} | combine({ node_exporter_username : node_exporter_password }) }}"
+    npvals: "{{ { node_exporter_username : node_exporter_password } }}"
+  
+    #node_exporter_basic_auth_users: 

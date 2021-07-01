@@ -27,19 +27,20 @@
       owner: root
       group: root
 
-  # Remote machine must have either cryptography>=1.3 or pyOpenSSL>=0.15 
+  # Local machine must have either cryptography>=1.3 or pyOpenSSL>=0.15 
+  # Need to install pip install passlib[bcrypt]
   # https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html   
   # Remote machine may be missing this
- # - name: Ensure python OpenSSL dependencies are installed.
+  # - name: Ensure python OpenSSL dependencies are installed.
   #   pip:
-  #     name: cryptography
-  #     executable: pip3
-  #     state: present 
+  #       name: cryptography
+  #       executable: pip3
+  #       state: present 
   # - name: pyopen
-    # pip:
-    #   name: pyOpenSSL
-    #   executable: pip3
-    #   state: present
+  #   pip:
+  #     name: pyOpenSSL
+  #     executable: pip3
+  #     state: present
 
   - name: create key    
     openssl_privatekey:
