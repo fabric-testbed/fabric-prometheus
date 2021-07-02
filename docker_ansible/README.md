@@ -45,3 +45,10 @@ SSH into the monitor node. Type `docker ps` to see if all the containers are run
 
 This should match what results when you run the query "docker_container_running_state" on the Explore page in Grafana.  
 
+
+
+# Misc Notes
+Ansible control node must have  passlib[bcrypt] installed.  
+Galaxy role installs 
+* geerlinguy.docker sp?
+* cloudalchemy.node_exporter sp?

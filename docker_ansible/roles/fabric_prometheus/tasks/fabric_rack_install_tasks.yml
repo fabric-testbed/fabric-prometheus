@@ -165,8 +165,6 @@
       # vars: 
       #   nginx_template_dir: "{{ nginx_confd_template_dir }}"
 
-          
-  
   when: true
 
 - name: NGNIX Container
@@ -183,3 +181,4 @@
       - blackbox
       - docker_exporter
       - snmp
+

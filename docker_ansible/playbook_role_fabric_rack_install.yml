@@ -3,16 +3,26 @@
 - hosts: uky
 
   # pre_tasks:
-  #   - pause: 
-  #       prompt: "Hi"
+  #   # - pause: 
+  #   #     prompt: "Hi"
+  #   - name: checkvars
+  #     debug:
+  #       msg: "{{ fabric_prometheus_ht_password }}"
   roles:
     - fabric_prometheus
 
-  vars_files:
-    #- vars/sensitive/common_rack_vars.yml
-    #- "vars/private_{{ hosts }}_vars.yml"
-    - private_uky-hn_vars.yml
-    - roles/fabric_prometheus/vars/sensitive/common_rack_vars.yml
+  #vars_files:
+    # Call from command line ala: ansible-playbook -i fabric-hosts --extra-vars "@private_vars/uky/common_rack_vars.yml" --extra-vars "@private_vars/uky/node_exporter_vars.yml" --extra-vars "@private_vars/uky/private_rack_vars.yml" playbook_role_fabric_rack_install.yml --diff --check
   vars:
     install_type: standard_fabric_rack
     extra_node_hosts: {}
+
+
+
+# --extra-vars "{set_vpn_pings:yes}"
+
+# ansible-playbook -i fabric-hosts --extra-vars "@private_vars/uky/common_rack_vars.yml" --extra-vars "@private_vars/uky/node_exporter_vars.yml" --extra-vars "@private_vars/uky/private_rack_vars.yml" playbook_role_fabric_rack_install.yml --diff --check
+
+
+
+# ansible-playbook -i fabric-hosts --extra-vars "{set_vpn_pings:yes}" --extra-vars "@private_vars/uky/common_rack_vars.yml" --extra-vars "@private_vars/uky/node_exporter_vars.yml" --extra-vars "@private_vars/uky/private_rack_vars.yml" playbook_role_fabric_rack_install.yml --diff --check
