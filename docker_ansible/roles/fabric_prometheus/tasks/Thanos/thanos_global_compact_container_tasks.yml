@@ -6,6 +6,7 @@
 - name: Control Thanos Compact Container
   become: yes
   community.docker.docker_container:
+    state: "{{ thanos_compact_state }}"
     name: "{{ install_name }}_thanos_compact"
     network_mode: "{{ docker_network_name }}"
     image: quay.io/thanos/thanos:v0.14.0
