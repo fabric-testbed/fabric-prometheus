@@ -36,3 +36,10 @@
         - '--log.format=json' # logfmt logfmt or json                          
 
     restart_policy: always 
+
+    # Thanos needs to make calls to sidecar and store via host node for the global node. 
+    # I can use the self-signed cert if we give the host name.
+    etc_hosts:
+      "{{ thanos_extra_node_hosts  | default(omit) }}"
+
+      

@@ -1,13 +1,29 @@
 ---
-## Create self-signed certs for testing and machines that don't have official certs.
+# Create self-signed certs for testing and machines that don't have official certs or
+#  for times we just need a cert for TLS.
 
     - name: Generate a Self Signed OpenSSL certificate 
-      block:             
-      - name: Ensure directory exists for local self-signed TLS certs.
-        file:
+      block:
+
+      - name: Create Directories for certs
+        file: 
           path: "{{ self_signed_cert_path }}"
-          #path: /etc/test_ssl/{{ hostname }}
-          state: directory
+          state: directory 
+          mode: 755
+
+      - name: Create Directories for keys
+        file: 
+          path: "{{ self_signed_key_path }}"
+          state: directory 
+          mode: 710
+
+
+
+      # - name: Ensure directory exists for local self-signed TLS certs.
+      #   file:
+      #     path: "{{ self_signed_cert_path }}"
+      #     #path: /etc/test_ssl/{{ hostname }}
+      #     state: directory
 
       - name: Generate an OpenSSL private key.
         openssl_privatekey:

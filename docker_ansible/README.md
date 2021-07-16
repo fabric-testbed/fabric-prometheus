@@ -1,3 +1,27 @@
+# Ansible Role
+The ansible fabric_prometheus role can install the reqired components for Prometheus monitoring of various systems.
+* Fabric Central Infrastructure (aka global metics)
+* Fabric Rack
+* Fabric Slice
+* GENI Slice
+
+These systems all have similar & overlapping features but differ in which components are added and how they are configured.
+The `install_type` determines which system is being installed. The options are:
+* fabric_rack
+* geni_slice
+* fabric_slice
+* global
+
+Each type of install requires one or more variable files.  
+You can use the playbooks included or alter them for special cases.
+* playbook_role_fabric_rack_install.yml
+* playbook_role_geni_slice_install.yml
+* playbook_role_fabric_global_install.yml
+
+
+
+
+
 # Install on a GENI slice
 
 To install to a geni slice you will need to run the following playbook:

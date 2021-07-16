@@ -1,10 +1,6 @@
 ---
 # Global Metrics vars
 
-
-
-
-
 # DEV IDEAS - DIFFS
 # Only ports that are exposed by NGINX need to be unique? 
 # change Grafana from 443 to ?
@@ -23,7 +19,8 @@ docker_network_name: "{{ install_name }}"
 base_data_dir: "/opt/data/{{ install_name }}"
 base_install_dir: "/opt/{{ install_name }}" 
 
-hostname: "metrics.fabric-testbed.net"
+# need to make dev certs
+hostname: "dev-metrics.fabric-testbed.net"
 host_cert: "/etc/ssl/certs/metrics_fabric-testbed_net.pem"
 host_key: "/etc/pki/tls/private/metrics_fabric-testbed_net.key"
 host_interm_cert: "/etc/pki/tls/certs/metrics_fabric-testbed_net_interm.cer"
@@ -64,7 +61,7 @@ prometheus_config_template_files:
   - base_snmp_targets.yml
 
   # alertmanger rules
-  -#TODO alerting templates 
+  #-#TODO alerting templates 
 
 
 ####################
@@ -134,7 +131,7 @@ alertmanager_template_dir: templates/global
 ####################
 
 # NOTE community string is a per rack variable
-# -- Moved to private vars -- # snmp_community_string: <private>
+# -- Moved to private vars -- # snmp_community_string: ZZprivateYY
 
 snmp_templates_dir: templates/rack/SNMP
 snmp_config_template_files: 
@@ -191,8 +188,8 @@ nginx_interm_cert: "{{ host_interm_cert }}"
 
                   
 # Nginx htaccess password to access status pages.
-# -- Moved to private vars -- # fabric_prometheus_ht_user: <private>
-# -- Moved to private vars -- # fabric_prometheus_ht_password: <private>
+# -- Moved to private vars -- # fabric_prometheus_ht_user: ZZprivateYY
+# -- Moved to private vars -- # fabric_prometheus_ht_password: ZZprivateYY
 
 
 ####################
@@ -205,8 +202,8 @@ node_exporter_tls_server_config:
 node_exporter_web_listen_address: "{{ ansible_host }}:9100"
 
 # Universal Rack Node Exporter user & pass
-# -- Moved to private vars -- # node_exporter_username: <private>
-# -- Moved to private vars -- # node_exporter_password: <private>
+# -- Moved to private vars -- # node_exporter_username: ZZprivateYY
+# -- Moved to private vars -- # node_exporter_password: ZZprivateYY
 
 ####################
 #       CEPH       #
@@ -214,10 +211,10 @@ node_exporter_web_listen_address: "{{ ansible_host }}:9100"
 # Global has ability to modify ceph data so it has different keys
 # Maybe I should add a new dev key for global that prevents it from 
 #  deleting anything
-# -- Moved to private vars -- # ceph_bucket: <private>
-# -- Moved to private vars -- # ceph_endpoint: <private>
-# -- Moved to private vars -- # ceph_access_key: <private>
-# -- Moved to private vars -- # ceph_secret_key: <private>
+# -- Moved to private vars -- # ceph_bucket: ZZprivateYY
+# -- Moved to private vars -- # ceph_endpoint: ZZprivateYY
+# -- Moved to private vars -- # ceph_access_key: ZZprivateYY
+# -- Moved to private vars -- # ceph_secret_key: ZZprivateYY
 
 
 
@@ -231,13 +228,13 @@ node_exporter_web_listen_address: "{{ ansible_host }}:9100"
 ####################
 #     Grafana      #
 ####################
-grafana_admin_password: <password_goes_here>
+grafana_admin_password: ZZpassword_goes_hereYY
 
 
 ####################
 #       SNMP       #
 ####################
-snmp_community_string: <snmp community string>
+snmp_community_string: ZZsnmp community stringYY
 
 
 ####################
@@ -248,8 +245,8 @@ snmp_community_string: <snmp community string>
 # Prometheus and Alertmanager have web UIs that do not
 #   have any user logins. So we password protect them 
 #   using htaccess.
-fabric_prometheus_ht_user: <user_name_goes_here>
-fabric_prometheus_ht_password: <password_goes_here>
+fabric_prometheus_ht_user: ZZuser_name_goes_hereYY
+fabric_prometheus_ht_password: ZZpassword_goes_hereYY
 
 
 ####################
@@ -258,8 +255,8 @@ fabric_prometheus_ht_password: <password_goes_here>
 # Node Exporter user & pass
 # Note that these values are only used between Prom and the 
 #   node exporter. No user will need to type them.
-node_exporter_username: <node_exporter_user_name_goes_here>
-node_exporter_password: <node_exporter_password_goes_here>
+node_exporter_username: ZZnode_exporter_user_name_goes_hereYY
+node_exporter_password: ZZnode_exporter_password_goes_hereYY
 
 
 

@@ -1,6 +1,68 @@
 ---
 
 
+
+##############################################################
+#                   Global Metrics                           #
+##############################################################
+# This section contains the tasks needed for installing the 
+#   global metrics site.
+
+##############################
+#  Fabric Global Prometheus  #
+##############################
+- name: Install Fabric Global setup 
+  block:
+  - name: Install python sdk to manage docker
+    become: yes
+    import_tasks: install_docker_python_sdk_tasks.yml
+    when: 
+      - add_python_docker_sdk is defined
+      - add_python_docker_sdk
+
+  
+  - name: Install Fabric Global Metrics
+    import_tasks: fabric_global_install_tasks.yml
+
+  
+  
+  when: 
+    - install_type is defined
+    - install_type == 'global'
+
+
+##############################################################
+#               end Global Metrics                           #
+##############################################################
+
+
+
+- name: Update Prometheus Alert Rules 
+  block: 
+  - name: Update prom config.
+    become: yes 
+    import_tasks: Prometheus/add_prometheus_config_templates.yml 
+
+  - name: Update Alertmanager.
+    become: yes 
+    import_tasks: Alertmanager/config_alertmanager_tasks.yml
+
+  - name: Stop Alertmanager. 
+    become: yes 
+    import_tasks: Alertmanager/alertmanager_container_tasks.yml
+    vars:
+      alertmanager_state: absent
+  - name: Restart Alertmanager. 
+    become: yes 
+    import_tasks: Alertmanager/alertmanager_container_tasks.yml
+  when:
+    - update_alerts is defined  
+    - update_alerts
+
+
+
+
+
 # OK
 ##############################
 #  Fabric Rack Prometheus    #
@@ -12,7 +74,7 @@
     when: component_type == 'head'
   when: 
     - install_type is defined
-    - install_type == 'standard_fabric_rack'
+    - install_type == 'fabric_rack'
 
 
 # OK
@@ -28,7 +90,7 @@
       - component_type == 'head' or component_type == 'worker'
   when: 
     - install_type is defined
-    - install_type == 'standard_fabric_rack' 
+    - install_type == 'fabric_rack' 
 
 
 # ##############################
@@ -49,7 +111,7 @@
 #       component_type == 'worker'
 #   when: 
 #     - install_type is defined
-#     - install_type == 'standard_fabric_rack' 
+#     - install_type == 'fabric_rack' 
 
 
 
@@ -65,7 +127,7 @@
 #       component_type == 'worker'
 #   when: 
 #     - install_type is defined
-#     - install_type == 'standard_fabric_rack' 
+#     - install_type == 'fabric_rack' 
 
 # OK
 ##############################
@@ -82,7 +144,7 @@
         - vpn_ping_targets.yml
   when: 
     - install_type is defined
-    - install_type == 'standard_fabric_rack' 
+    - install_type == 'fabric_rack' 
     - component_type == 'head'
     - set_vpn_pings is defined
     - set_vpn_pings

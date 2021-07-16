@@ -13,6 +13,7 @@
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--web.listen-address=:{{ alertmanager_port }}'
+      - '--log.level=debug'
     # ports:
     #   - "{{ alertmanager_port }}:{{ alertmanager_port }}" 
     restart_policy: always

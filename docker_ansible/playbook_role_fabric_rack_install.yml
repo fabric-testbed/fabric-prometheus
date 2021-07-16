@@ -14,7 +14,7 @@
   #vars_files:
     # Call from command line ala: ansible-playbook -i fabric-hosts --extra-vars "@private_vars/uky/common_rack_vars.yml" --extra-vars "@private_vars/uky/node_exporter_vars.yml" --extra-vars "@private_vars/uky/private_rack_vars.yml" playbook_role_fabric_rack_install.yml --diff --check
   vars:
-    install_type: standard_fabric_rack
+    install_type: fabric_rack
     extra_node_hosts: {}
 
 
