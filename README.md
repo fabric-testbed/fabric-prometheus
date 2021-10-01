@@ -1,3 +1,7 @@
+# This repo has been Deprecated
+See the MeasurementFramework repo for the current monitoring repositories.  
+This repo is being keep for reference purposes only.
+
 
 # Prometheus Monitoring Setup
 This document covers the installation and configuration of metric collection via Prometheus and Thanos.
