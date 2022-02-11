@@ -1,3 +1,4 @@
+# DEPRECATION NOTICE: This repository has been DEPRECATED. See the MeasurementFramework repo at https://github.com/fabric-testbed/MeasurementFramework for the current setup.
 
 # Prometheus Monitoring Setup
 This document covers the installation and configuration of metric collection via Prometheus and Thanos.
